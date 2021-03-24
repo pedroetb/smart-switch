@@ -8,6 +8,7 @@ String mqttInputTopic;
 char messageBuffer[mqttMaxPacketSize + 1];
 uint32_t lastMqttEvalTime = 0;
 bool previouslyConnected = false;
+bool mqttDisconnected = true;
 bool mqttEnabled = true;
 
 void mqttSetup() {
@@ -51,6 +52,7 @@ void mqttConnect() {
   if (mqttClient.connect(mqttClientId.c_str(), mqttUser, mqttPass)) {
     logMessage("MQTT connection established");
     previouslyConnected = true;
+    mqttDisconnected = false;
     mqttClient.unsubscribe(mqttInputTopic.c_str());
     mqttClient.subscribe(mqttInputTopic.c_str());
   } else {
@@ -60,8 +62,12 @@ void mqttConnect() {
 
 void mqttDisconnect() {
 
+  if (mqttDisconnected) {
+    return;
+  }
   mqttClient.unsubscribe(mqttInputTopic.c_str());
   mqttClient.disconnect();
+  mqttDisconnected = true;
   if (previouslyConnected) {
     logSerialMessage("MQTT connection closed");
   }
