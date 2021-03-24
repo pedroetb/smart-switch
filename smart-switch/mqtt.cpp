@@ -143,12 +143,12 @@ void mqttCallback(char* topic, uint8_t* payload, uint8_t length) {
   handleMqttRequest(mqttMessage);
 }
 
-void evalMqttStatus(uint32_t currMqttEvalTime) {
+void evalMqttStatus(uint32_t currEvalTime) {
 
-  if ((uint32_t)(currMqttEvalTime - lastMqttEvalTime) < mqttEvalTimeout) {
+  if ((uint32_t)(currEvalTime - lastMqttEvalTime) < mqttEvalTimeout) {
     return;
   }
-  lastMqttEvalTime = currMqttEvalTime;
+  lastMqttEvalTime = currEvalTime;
 
   if (!getWifiStatus()) {
     mqttDisconnect();

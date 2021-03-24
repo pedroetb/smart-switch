@@ -305,12 +305,12 @@ void httpSetup() {
   httpConnect();
 }
 
-void evalHttpStatus(uint32_t currHttpEvalTime) {
+void evalHttpStatus(uint32_t currEvalTime) {
 
-  if ((uint32_t)(currHttpEvalTime - lastHttpEvalTime) < httpEvalTimeout) {
+  if ((uint32_t)(currEvalTime - lastHttpEvalTime) < httpEvalTimeout) {
     return;
   }
-  lastHttpEvalTime = currHttpEvalTime;
+  lastHttpEvalTime = currEvalTime;
 
   server.handleClient();
 }

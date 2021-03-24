@@ -5,7 +5,7 @@
 #include "common.hpp"
 #include "relay.hpp"
 
-void evalTimerStatus(uint32_t currTimerTime);
+void evalTimerStatus(uint32_t currEvalTime);
 void enableTimer();
 void disableTimer();
 uint32_t getTimerElapsedTime();

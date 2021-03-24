@@ -6,7 +6,7 @@
 #include "common.hpp"
 
 void wifiSetup();
-void evalWifiStatus(uint32_t currTimerTime);
+void evalWifiStatus(uint32_t currEvalTime);
 String getWifiMac();
 String getWifiSsid();
 String getWifiIp();

@@ -95,18 +95,18 @@ void wifiConnect(uint32_t currWifiConnectTime) {
   }
 }
 
-void evalWifiStatus(uint32_t currWifiEvalTime) {
+void evalWifiStatus(uint32_t currEvalTime) {
 
   if (connectRetriesSpent > 0 || wifiSettingUp) {
-    wifiConnect(currWifiEvalTime);
+    wifiConnect(currEvalTime);
     return;
   }
 
-  if ((uint32_t)(currWifiEvalTime - lastWifiEvalTime) < wifiEvalTimeout) {
+  if ((uint32_t)(currEvalTime - lastWifiEvalTime) < wifiEvalTimeout) {
     return;
   }
 
-  lastWifiEvalTime = currWifiEvalTime;
+  lastWifiEvalTime = currEvalTime;
 
   if (getWifiStatus()) {
     if (wifiFailure) {
@@ -118,5 +118,5 @@ void evalWifiStatus(uint32_t currWifiEvalTime) {
 
   wifiFailure = true;
   logSerialMessage("WiFi was disconnected, establishing new connection");
-  wifiConnect(currWifiEvalTime);
+  wifiConnect(currEvalTime);
 }

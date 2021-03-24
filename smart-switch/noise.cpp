@@ -11,7 +11,7 @@ void noiseSetup() {
   pinMode(noisePin, INPUT);
 }
 
-void evalNoiseStatus(uint32_t currNoiseTime) {
+void evalNoiseStatus(uint32_t currEvalTime) {
 
   if (!noiseEnabled) {
     return;
@@ -27,18 +27,18 @@ void evalNoiseStatus(uint32_t currNoiseTime) {
   bool silenceInPreviousEval = lastNoiseValue == 0;
 
   if (silenceInPreviousEval) {
-    bool noiseIsDiscontinuous = currNoiseTime - noiseLongDebounceTimeout > lastNoiseTime;
-    bool noiseIsNotOverlapped = currNoiseTime - noiseRepetitiveDebounceTimeout < lastNoiseTime;
-    bool lastNoisePatternFinished = currNoiseTime - noisePatternDebounceTimeout > lastAcceptedNoiseTime;
+    bool noiseIsDiscontinuous = currEvalTime - noiseLongDebounceTimeout > lastNoiseTime;
+    bool noiseIsNotOverlapped = currEvalTime - noiseRepetitiveDebounceTimeout < lastNoiseTime;
+    bool lastNoisePatternFinished = currEvalTime - noisePatternDebounceTimeout > lastAcceptedNoiseTime;
   
     if (noiseIsDiscontinuous && noiseIsNotOverlapped && lastNoisePatternFinished) {
       logMessage("Noise (double clap) detected");
       toggleRelay();
-      lastAcceptedNoiseTime = currNoiseTime;
+      lastAcceptedNoiseTime = currEvalTime;
     }
   }
 
-  lastNoiseTime = currNoiseTime;
+  lastNoiseTime = currEvalTime;
   lastNoiseValue = noiseValue;
 }
 

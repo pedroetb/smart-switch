@@ -6,7 +6,7 @@
 #include "relay.hpp"
 
 void noiseSetup();
-void evalNoiseStatus(uint32_t currNoiseTime);
+void evalNoiseStatus(uint32_t currEvalTime);
 void enableNoise();
 void disableNoise();
 bool getNoiseEnabled();

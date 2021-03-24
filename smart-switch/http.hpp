@@ -11,7 +11,7 @@
 #include "mqtt.hpp"
 
 void httpSetup();
-void evalHttpStatus(uint32_t currMqttEvalTime);
+void evalHttpStatus(uint32_t currEvalTime);
 void enableHttp();
 void disableHttp();
 bool getHttpEnabled();

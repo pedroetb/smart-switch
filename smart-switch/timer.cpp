@@ -57,7 +57,7 @@ uint32_t getTimerElapsedTime() {
   return (uint32_t)(millis() - timerStartTime);
 }
 
-void evalTimerStatus(uint32_t currTimerTime) {
+void evalTimerStatus(uint32_t currEvalTime) {
 
   if (!timerEnabled) {
     return;
@@ -75,7 +75,7 @@ void evalTimerStatus(uint32_t currTimerTime) {
     startTimer();
   }
 
-  if ((uint32_t)(currTimerTime - timerStartTime) < timerTimeout) {
+  if ((uint32_t)(currEvalTime - timerStartTime) < timerTimeout) {
     return;
   }
 
