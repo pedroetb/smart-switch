@@ -17,7 +17,7 @@ void evalNoiseStatus(uint32_t currEvalTime) {
     return;
   }
 
-  noiseValue = digitalRead(noisePin);
+  noiseValue = !digitalRead(noisePin);
 
   if (noiseValue == 0) {
     lastNoiseValue = noiseValue;
