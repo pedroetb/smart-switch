@@ -124,6 +124,10 @@ void handleMqttRequest(String message) {
     enableHttp();
   } else if (command.equals("/disable-http")) {
     disableHttp();
+  } else if (command.equals("/enable-ota")) {
+    enableOta();
+  } else if (command.equals("/disable-ota")) {
+    disableOta();
   } else if (command.equals("/reset")) {
     restartBoard();
   } else {

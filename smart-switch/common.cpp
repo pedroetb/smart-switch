@@ -16,7 +16,7 @@ void restartBoard() {
 
 String getDeviceStatus() {
 
-  char deviceStatusBuffer[310];
+  char deviceStatusBuffer[330];
 
   sprintf(deviceStatusBuffer,
     "{\n"
@@ -33,10 +33,11 @@ String getDeviceStatus() {
       "\t\"rssi\": %i,\n"
       "\t\"httpEnabled\": %u,\n"
       "\t\"mqttEnabled\": %u\n"
+      "\t\"otaEnabled\": %u\n"
     "}",
     getRelayStatus(), getNoiseEnabled(), getNoiseValue(), getTimerEnabled(), getTimerElapsedTime(), getTimerTimeout(),
     getWifiStatus(), getWifiMac().c_str(), getWifiSsid().c_str(), getWifiIp().c_str(), getWifiRssi(),
-    getHttpEnabled(), getMqttEnabled());
+    getHttpEnabled(), getMqttEnabled(), getOtaEnabled());
 
   return (String)deviceStatusBuffer;
 }

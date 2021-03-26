@@ -9,6 +9,7 @@
 #include "noise.hpp"
 #include "wifi.hpp"
 #include "mqtt.hpp"
+#include "ota.hpp"
 
 void httpSetup();
 void evalHttpStatus(uint32_t currEvalTime);

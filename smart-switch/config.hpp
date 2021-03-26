@@ -11,7 +11,7 @@ constexpr bool mqttLogEnabled = true;
 constexpr char* rootName = "pedroetb";
 constexpr char* commonName = "smart-switch";
 constexpr char* uniqueId = "001";
-constexpr uint8_t actionsLength = 15;
+constexpr uint8_t actionsLength = 17;
 constexpr char* actions[actionsLength] = {
   "/", "/status", "/reset",
   "/on", "/off", "/toggle",
@@ -19,6 +19,7 @@ constexpr char* actions[actionsLength] = {
   "/enable-timer", "/disable-timer", "/set-timer",
   "/enable-http", "/disable-http",
   "/enable-mqtt", "/disable-mqtt",
+  "/enable-ota", "/disable-ota",
 };
 
 // relay
@@ -55,5 +56,10 @@ constexpr uint16_t mqttMaxPacketSize = 256;
 constexpr uint8_t mqttKeepAlive = 15;
 constexpr uint8_t mqttSocketTimeout = 15;
 constexpr uint16_t mqttEvalTimeout = 1000;
+
+// ota
+constexpr uint16_t otaPort = 8266;
+constexpr char* otaPassHash = "4cb9c8a8048fd02294477fcb1a41191a"; //hash for "changeme"
+constexpr uint16_t otaEvalTimeout = 3000;
 
 #endif

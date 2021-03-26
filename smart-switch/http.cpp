@@ -168,6 +168,20 @@ void handleDisableMqtt() {
   sendSuccessResponse("MQTT communication disabled");
 }
 
+void handleEnableOta() {
+
+  printHttpRequest();
+  enableOta();
+  sendSuccessResponse("OTA update enabled");
+}
+
+void handleDisableOta() {
+
+  printHttpRequest();
+  disableOta();
+  sendSuccessResponse("OTA update disabled");
+}
+
 void handleReset() {
 
   printHttpRequest();
@@ -298,6 +312,8 @@ void httpSetup() {
   server.on("/set-timer", HTTP_GET, handleSetTimer);
   server.on("/enable-mqtt", HTTP_GET, handleEnableMqtt);
   server.on("/disable-mqtt", HTTP_GET, handleDisableMqtt);
+  server.on("/enable-ota", HTTP_GET, handleEnableOta);
+  server.on("/disable-ota", HTTP_GET, handleDisableOta);
   server.on("/reset", HTTP_GET, handleReset);
 
   server.onNotFound(handleNotFound);

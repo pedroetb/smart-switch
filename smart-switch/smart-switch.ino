@@ -4,8 +4,9 @@
 #include "timer.hpp"
 #include "noise.hpp"
 #include "wifi.hpp"
-#include "mqtt.hpp"
 #include "http.hpp"
+#include "mqtt.hpp"
+#include "ota.hpp"
 
 void setup() {
 
@@ -15,6 +16,7 @@ void setup() {
   wifiSetup();
   httpSetup();
   mqttSetup();
+  otaSetup();
 
   logSerialMessage("\n--- Setup completed in " + (String)millis() + " ms ---\n\n");
 }
@@ -28,4 +30,5 @@ void loop() {
   evalWifiStatus(currEvalTime);
   evalHttpStatus(currEvalTime);
   evalMqttStatus(currEvalTime);
+  evalOtaStatus(currEvalTime);
 }

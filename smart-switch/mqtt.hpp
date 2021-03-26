@@ -8,6 +8,7 @@
 #include "relay.hpp"
 #include "wifi.hpp"
 #include "http.hpp"
+#include "ota.hpp"
 
 void mqttSetup();
 void evalMqttStatus(uint32_t currEvalTime);
