@@ -29,6 +29,11 @@ void mqttSetup() {
   logSerialMessage("MQTT client started, waiting for connection");
 }
 
+bool getMqttStatus() {
+
+  return mqttClient.connected();
+}
+
 void logMqttMessage(String message) {
 
   if (!mqttLogEnabled || !mqttEnabled) {
@@ -36,7 +41,7 @@ void logMqttMessage(String message) {
   }
 
   message = "[" + (String)mqttClientId + "] " + message;
-  if (mqttClient.connected()) {
+  if (getMqttStatus()) {
     mqttClient.beginPublish(mqttOutputTopic.c_str(), message.length(), false);
     mqttClient.print(message);
     mqttClient.endPublish();
@@ -165,7 +170,7 @@ void evalMqttStatus(uint32_t currEvalTime) {
   }
   lastMqttEvalTime = currEvalTime;
 
-  if (!mqttClient.connected()) {
+  if (!getMqttStatus()) {
     mqttConnect();
   }
   mqttClient.loop();

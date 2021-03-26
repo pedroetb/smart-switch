@@ -18,5 +18,6 @@ void logMqttMessage(String message);
 void enableMqtt();
 void disableMqtt();
 bool getMqttEnabled();
+bool getMqttStatus();
 
 #endif
