@@ -307,6 +307,10 @@ void httpSetup() {
 
 void evalHttpStatus(uint32_t currEvalTime) {
 
+  if (!httpEnabled || !getWifiStatus()) {
+    return;
+  }
+
   if ((uint32_t)(currEvalTime - lastHttpEvalTime) < httpEvalTimeout) {
     return;
   }

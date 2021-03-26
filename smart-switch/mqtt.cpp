@@ -151,24 +151,20 @@ void mqttCallback(char* topic, uint8_t* payload, uint8_t length) {
 
 void evalMqttStatus(uint32_t currEvalTime) {
 
+  if (!mqttEnabled || !getWifiStatus()) {
+    mqttDisconnect();
+    return;
+  }
+
   if ((uint32_t)(currEvalTime - lastMqttEvalTime) < mqttEvalTimeout) {
     return;
   }
   lastMqttEvalTime = currEvalTime;
 
-  if (!getWifiStatus()) {
-    mqttDisconnect();
-    return;
-  }
-
-  if (mqttClient.connected()) {
-    mqttClient.loop();
-    return;
-  }
-
-  if (mqttEnabled) {
+  if (!mqttClient.connected()) {
     mqttConnect();
   }
+  mqttClient.loop();
 }
 
 void enableMqtt() {
