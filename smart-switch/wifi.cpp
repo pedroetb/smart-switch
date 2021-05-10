@@ -9,8 +9,10 @@ uint8_t connectRetriesSpent = 0;
 void wifiSetup() {
 
   logSerialMessage("\n--- WiFi setup ---");
-  logSerialMessage("WiFi connection is starting");
+
   WiFi.mode(WIFI_STA);
+
+  logSerialMessage("WiFi connection is starting");
 }
 
 String getWifiMac() {

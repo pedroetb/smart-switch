@@ -284,6 +284,10 @@ void handleRoot() {
 
 void httpConnect() {
 
+  if (!httpEnabled) {
+    return;
+  }
+
   server.begin();
   logSerialMessage("HTTP server started on port " + (String)httpServerPort);
 }

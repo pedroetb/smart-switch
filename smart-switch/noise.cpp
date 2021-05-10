@@ -8,7 +8,11 @@ bool noiseValue = 0;
 
 void noiseSetup() {
 
+  logSerialMessage("\n--- Noise setup ---");
+
   pinMode(noisePin, INPUT);
+
+  logSerialMessage("Listening double-clap sound patterns");
 }
 
 void evalNoiseStatus(uint32_t currEvalTime) {
