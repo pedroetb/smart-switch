@@ -23,13 +23,20 @@ constexpr char* actions[actionsLength] = {
 };
 
 // relay
-constexpr uint8_t relayPin = 5;
+constexpr uint8_t relayPin = D1; // GPIO5
+
+// measure
+constexpr uint8_t measurePin = D5; // GPIO14
+constexpr uint8_t resetMeasurePowerStatusTimeout = 100;
+constexpr uint16_t measureFrequencyInterval = 10000;
+constexpr uint16_t measureFrequencyDuration = 1000;
+constexpr uint8_t measureFrequencyDivisor = 2;
 
 // timer
 constexpr uint32_t timerTimeoutDefault = 600000;
 
 // noise
-constexpr uint8_t noisePin = 4;
+constexpr uint8_t noisePin = D2; // GPIO4
 constexpr uint16_t noiseLongDebounceTimeout = 150;
 constexpr uint16_t noiseRepetitiveDebounceTimeout = 600;
 constexpr uint16_t noisePatternDebounceTimeout = 800;

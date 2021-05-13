@@ -5,13 +5,20 @@ uint32_t timerStartTime = 0;
 bool timerEnabled = true;
 bool timerRunning = false;
 
-void startTimer() {
+void timerSetup() {
+
+  logSerialMessage("\n--- Timer setup ---");
 
   if (timerEnabled) {
-    timerStartTime = millis();
-    timerRunning = true;
-    logMessage("Auto-off timer will trigger in " + (String)timerTimeout + " ms");
+    logSerialMessage("Auto-off timer set to " + (String)timerTimeout + " ms");
   }
+}
+
+void startTimer(uint32_t startTime) {
+
+  timerStartTime = startTime;
+  timerRunning = true;
+  logMessage("Auto-off timer will trigger in " + (String)timerTimeout + " ms");
 }
 
 void clearTimer() {
@@ -45,7 +52,7 @@ void triggerTimer() {
 
   clearTimer();
   logMessage("Auto-off timer triggered");
-  disableRelay();
+  toggleRelay();
 }
 
 uint32_t getTimerElapsedTime() {
@@ -63,7 +70,7 @@ void evalTimerStatus(uint32_t currEvalTime) {
     return;
   }
 
-  if (!getRelayStatus()) {
+  if (!getMeasurePowerStatus()) {
     if (timerRunning) {
       clearTimer();
       logMessage("Auto-off timer cleared");
@@ -72,7 +79,7 @@ void evalTimerStatus(uint32_t currEvalTime) {
   }
 
   if (!timerRunning) {
-    startTimer();
+    startTimer(currEvalTime);
   }
 
   if ((uint32_t)(currEvalTime - timerStartTime) < timerTimeout) {

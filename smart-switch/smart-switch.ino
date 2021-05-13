@@ -1,6 +1,7 @@
 #include "config.hpp"
 #include "common.hpp"
 #include "relay.hpp"
+#include "measure.hpp"
 #include "timer.hpp"
 #include "noise.hpp"
 #include "wifi.hpp"
@@ -12,6 +13,8 @@ void setup() {
 
   commonSetup();
   relaySetup();
+  measureSetup();
+  timerSetup();
   noiseSetup();
   wifiSetup();
   httpSetup();
@@ -25,6 +28,7 @@ void loop() {
 
   uint32_t currEvalTime = millis();
 
+  evalMeasureStatus(currEvalTime);
   evalTimerStatus(currEvalTime);
   evalNoiseStatus(currEvalTime);
   evalWifiStatus(currEvalTime);

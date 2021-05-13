@@ -4,7 +4,9 @@
 #include "config.hpp"
 #include "common.hpp"
 #include "relay.hpp"
+#include "measure.hpp"
 
+void timerSetup();
 void evalTimerStatus(uint32_t currEvalTime);
 void enableTimer();
 void disableTimer();

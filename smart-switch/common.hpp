@@ -3,6 +3,7 @@
 
 #include "config.hpp"
 #include "relay.hpp"
+#include "measure.hpp"
 #include "timer.hpp"
 #include "noise.hpp"
 #include "wifi.hpp"

@@ -2,12 +2,17 @@
 
 bool relayStatus = false;
 
+void writeRelayStatus() {
+
+  digitalWrite(relayPin, !relayStatus); // HIGH/LOW are inverted on NodeMCU
+}
+
 void relaySetup() {
 
   logSerialMessage("\n--- Relay setup ---");
 
   pinMode(relayPin, OUTPUT);
-  digitalWrite(relayPin, HIGH); // HIGH/LOW are inverted on NodeMCU
+  writeRelayStatus();
 
   logSerialMessage("Managing relay state");
 }
@@ -20,7 +25,7 @@ bool getRelayStatus() {
 void applyRelayStatus() {
 
   logMessage("Relay is: " + (String)(relayStatus ? "ON" : "OFF"));
-  digitalWrite(relayPin, !relayStatus); // HIGH/LOW are inverted on NodeMCU
+  writeRelayStatus();
 }
 
 void enableRelay() {

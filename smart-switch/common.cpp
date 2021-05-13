@@ -16,11 +16,13 @@ void restartBoard() {
 
 String getDeviceStatus() {
 
-  char deviceStatusBuffer[350];
+  char deviceStatusBuffer[400];
 
   sprintf(deviceStatusBuffer,
     "{\n"
       "\t\"relayStatus\": %u,\n"
+      "\t\"measurePowerStatus\": %u,\n"
+      "\t\"measureFrequency\": %u,\n"
       "\t\"noiseEnabled\": %u,\n"
       "\t\"noiseValue\": %u,\n"
       "\t\"timerEnabled\": %u,\n"
@@ -36,9 +38,10 @@ String getDeviceStatus() {
       "\t\"mqttStatus\": %u,\n"
       "\t\"otaEnabled\": %u\n"
     "}",
-    getRelayStatus(), getNoiseEnabled(), getNoiseValue(), getTimerEnabled(), getTimerElapsedTime(), getTimerTimeout(),
-    getWifiStatus(), getWifiMac().c_str(), getWifiSsid().c_str(), getWifiIp().c_str(), getWifiRssi(),
-    getHttpEnabled(), getMqttEnabled(), getMqttStatus(), getOtaEnabled());
+    getRelayStatus(), getMeasurePowerStatus(), getMeasureFrequency(), getNoiseEnabled(),
+    getNoiseValue(), getTimerEnabled(), getTimerElapsedTime(), getTimerTimeout(),
+    getWifiStatus(), getWifiMac().c_str(), getWifiSsid().c_str(), getWifiIp().c_str(),
+    getWifiRssi(), getHttpEnabled(), getMqttEnabled(), getMqttStatus(), getOtaEnabled());
 
   return (String)deviceStatusBuffer;
 }
