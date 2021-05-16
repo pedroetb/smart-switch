@@ -61,7 +61,6 @@ void otaSetup() {
 
 	ArduinoOTA.setHostname(otaHostname.c_str());
 	ArduinoOTA.setPort(otaPort);
-	ArduinoOTA.setPasswordHash(otaPassHash);
 	ArduinoOTA.setRebootOnSuccess(false);
 
 	ArduinoOTA.onStart(onOtaStart);

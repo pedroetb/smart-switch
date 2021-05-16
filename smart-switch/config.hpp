@@ -66,7 +66,6 @@ constexpr uint16_t mqttEvalTimeout = 1000;
 
 // ota
 constexpr uint16_t otaPort = 8266;
-constexpr char* otaPassHash = "4cb9c8a8048fd02294477fcb1a41191a"; //hash for "changeme"
 constexpr uint16_t otaEvalTimeout = 3000;
 
 #endif
