@@ -8,70 +8,70 @@ bool noiseValue = 0;
 
 void noiseSetup() {
 
-  logSerialMessage("\n--- Noise setup ---");
+	logSerialMessage("\n--- Noise setup ---");
 
-  pinMode(noisePin, INPUT);
+	pinMode(noisePin, INPUT);
 
-  logSerialMessage("Listening double-clap sound patterns");
+	logSerialMessage("Listening double-clap sound patterns");
 }
 
 void evalNoiseStatus(uint32_t currEvalTime) {
 
-  if (!noiseEnabled) {
-    return;
-  }
+	if (!noiseEnabled) {
+		return;
+	}
 
-  noiseValue = !digitalRead(noisePin);
+	noiseValue = !digitalRead(noisePin);
 
-  if (noiseValue == 0) {
-    lastNoiseValue = noiseValue;
-    return;
-  }
+	if (noiseValue == 0) {
+		lastNoiseValue = noiseValue;
+		return;
+	}
 
-  bool silenceInPreviousEval = lastNoiseValue == 0;
+	bool silenceInPreviousEval = lastNoiseValue == 0;
 
-  if (silenceInPreviousEval) {
-    bool noiseIsDiscontinuous = currEvalTime - noiseLongDebounceTimeout > lastNoiseTime;
-    bool noiseIsNotOverlapped = currEvalTime - noiseRepetitiveDebounceTimeout < lastNoiseTime;
-    bool lastNoisePatternFinished = currEvalTime - noisePatternDebounceTimeout > lastAcceptedNoiseTime;
-  
-    if (noiseIsDiscontinuous && noiseIsNotOverlapped && lastNoisePatternFinished) {
-      logMessage("Noise (double clap) detected");
-      toggleRelay();
-      lastAcceptedNoiseTime = currEvalTime;
-    }
-  }
+	if (silenceInPreviousEval) {
+		bool noiseIsDiscontinuous = currEvalTime - noiseLongDebounceTimeout > lastNoiseTime;
+		bool noiseIsNotOverlapped = currEvalTime - noiseRepetitiveDebounceTimeout < lastNoiseTime;
+		bool lastNoisePatternFinished = currEvalTime - noisePatternDebounceTimeout > lastAcceptedNoiseTime;
 
-  lastNoiseTime = currEvalTime;
-  lastNoiseValue = noiseValue;
+		if (noiseIsDiscontinuous && noiseIsNotOverlapped && lastNoisePatternFinished) {
+			logMessage("Noise (double clap) detected");
+			toggleRelay();
+			lastAcceptedNoiseTime = currEvalTime;
+		}
+	}
+
+	lastNoiseTime = currEvalTime;
+	lastNoiseValue = noiseValue;
 }
 
 void enableNoise() {
 
-  if (noiseEnabled) {
-    return;
-  }
+	if (noiseEnabled) {
+		return;
+	}
 
-  noiseEnabled = true;
-  logMessage("Noise trigger enabled");
+	noiseEnabled = true;
+	logMessage("Noise trigger enabled");
 }
 
 void disableNoise() {
 
-  if (!noiseEnabled) {
-    return;
-  }
+	if (!noiseEnabled) {
+		return;
+	}
 
-  noiseEnabled = false;
-  logMessage("Noise trigger disabled");
+	noiseEnabled = false;
+	logMessage("Noise trigger disabled");
 }
 
 bool getNoiseEnabled() {
 
-  return noiseEnabled;
+	return noiseEnabled;
 }
 
 bool getNoiseValue() {
 
-  return noiseValue;
+	return noiseValue;
 }

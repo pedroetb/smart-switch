@@ -4,44 +4,44 @@ bool relayStatus = false;
 
 void writeRelayStatus() {
 
-  digitalWrite(relayPin, !relayStatus); // HIGH/LOW are inverted on NodeMCU
+	digitalWrite(relayPin, !relayStatus); // HIGH/LOW are inverted on NodeMCU
 }
 
 void relaySetup() {
 
-  logSerialMessage("\n--- Relay setup ---");
+	logSerialMessage("\n--- Relay setup ---");
 
-  pinMode(relayPin, OUTPUT);
-  writeRelayStatus();
+	pinMode(relayPin, OUTPUT);
+	writeRelayStatus();
 
-  logSerialMessage("Managing relay state");
+	logSerialMessage("Managing relay state");
 }
 
 bool getRelayStatus() {
 
-  return relayStatus;
+	return relayStatus;
 }
 
 void applyRelayStatus() {
 
-  logMessage("Relay is: " + (String)(relayStatus ? "ON" : "OFF"));
-  writeRelayStatus();
+	logMessage("Relay is: " + (String)(relayStatus ? "ON" : "OFF"));
+	writeRelayStatus();
 }
 
 void enableRelay() {
 
-  relayStatus = true;
-  applyRelayStatus();
+	relayStatus = true;
+	applyRelayStatus();
 }
 
 void disableRelay() {
 
-  relayStatus = false;
-  applyRelayStatus();
+	relayStatus = false;
+	applyRelayStatus();
 }
 
 void toggleRelay() {
 
-  relayStatus = !relayStatus;
-  applyRelayStatus();
+	relayStatus = !relayStatus;
+	applyRelayStatus();
 }

@@ -13,13 +13,13 @@ constexpr char* commonName = "smart-switch";
 constexpr char* uniqueId = "001";
 constexpr uint8_t actionsLength = 17;
 constexpr char* actions[actionsLength] = {
-  "/", "/status", "/reset",
-  "/on", "/off", "/toggle",
-  "/enable-noise", "/disable-noise",
-  "/enable-timer", "/disable-timer", "/set-timer",
-  "/enable-http", "/disable-http",
-  "/enable-mqtt", "/disable-mqtt",
-  "/enable-ota", "/disable-ota",
+	"/", "/status", "/reset",
+	"/on", "/off", "/toggle",
+	"/enable-noise", "/disable-noise",
+	"/enable-timer", "/disable-timer", "/set-timer",
+	"/enable-http", "/disable-http",
+	"/enable-mqtt", "/disable-mqtt",
+	"/enable-ota", "/disable-ota",
 };
 
 // relay

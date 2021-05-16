@@ -7,106 +7,106 @@ bool timerRunning = false;
 
 void timerSetup() {
 
-  logSerialMessage("\n--- Timer setup ---");
+	logSerialMessage("\n--- Timer setup ---");
 
-  if (timerEnabled) {
-    logSerialMessage("Auto-off timer set to " + (String)timerTimeout + " ms");
-  }
+	if (timerEnabled) {
+		logSerialMessage("Auto-off timer set to " + (String)timerTimeout + " ms");
+	}
 }
 
 void startTimer(uint32_t startTime) {
 
-  timerStartTime = startTime;
-  timerRunning = true;
-  logMessage("Auto-off timer will trigger in " + (String)timerTimeout + " ms");
+	timerStartTime = startTime;
+	timerRunning = true;
+	logMessage("Auto-off timer will trigger in " + (String)timerTimeout + " ms");
 }
 
 void clearTimer() {
 
-  timerStartTime = 0;
-  timerRunning = false;
+	timerStartTime = 0;
+	timerRunning = false;
 }
 
 void enableTimer() {
 
-  if (timerEnabled) {
-    return;
-  }
+	if (timerEnabled) {
+		return;
+	}
 
-  timerEnabled = true;
-  logMessage("Auto-off timer enabled");
+	timerEnabled = true;
+	logMessage("Auto-off timer enabled");
 }
 
 void disableTimer() {
 
-  if (!timerEnabled) {
-    return;
-  }
+	if (!timerEnabled) {
+		return;
+	}
 
-  timerEnabled = false;
-  clearTimer();
-  logMessage("Auto-off timer disabled");
+	timerEnabled = false;
+	clearTimer();
+	logMessage("Auto-off timer disabled");
 }
 
 void triggerTimer() {
 
-  clearTimer();
-  logMessage("Auto-off timer triggered");
-  toggleRelay();
+	clearTimer();
+	logMessage("Auto-off timer triggered");
+	toggleRelay();
 }
 
 uint32_t getTimerElapsedTime() {
 
-  if (!timerRunning) {
-    return 0;
-  }
+	if (!timerRunning) {
+		return 0;
+	}
 
-  return (uint32_t)(millis() - timerStartTime);
+	return (uint32_t)(millis() - timerStartTime);
 }
 
 void evalTimerStatus(uint32_t currEvalTime) {
 
-  if (!timerEnabled) {
-    return;
-  }
+	if (!timerEnabled) {
+		return;
+	}
 
-  if (!getMeasurePowerStatus()) {
-    if (timerRunning) {
-      clearTimer();
-      logMessage("Auto-off timer cleared");
-    }
-    return;
-  }
+	if (!getMeasurePowerStatus()) {
+		if (timerRunning) {
+			clearTimer();
+			logMessage("Auto-off timer cleared");
+		}
+		return;
+	}
 
-  if (!timerRunning) {
-    startTimer(currEvalTime);
-  }
+	if (!timerRunning) {
+		startTimer(currEvalTime);
+	}
 
-  if ((uint32_t)(currEvalTime - timerStartTime) < timerTimeout) {
-    return;
-  }
+	if ((uint32_t)(currEvalTime - timerStartTime) < timerTimeout) {
+		return;
+	}
 
-  triggerTimer();
+	triggerTimer();
 }
 
 void setTimerTimeout(uint32_t timeout) {
 
-  timerTimeout = timeout;
-  logMessage("Auto-off timer timeout set to " + (String)timeout + " ms");
+	timerTimeout = timeout;
+	logMessage("Auto-off timer timeout set to " + (String)timeout + " ms");
 }
 
 void setTimerTimeout(String timeoutStr) {
 
-  uint32_t timeoutNum = strtoul(timeoutStr.c_str(), 0, 10);
-  setTimerTimeout(timeoutNum);
+	uint32_t timeoutNum = strtoul(timeoutStr.c_str(), 0, 10);
+	setTimerTimeout(timeoutNum);
 }
 
 uint32_t getTimerTimeout() {
 
-  return timerTimeout;
+	return timerTimeout;
 }
 
 bool getTimerEnabled() {
 
-  return timerEnabled;
+	return timerEnabled;
 }

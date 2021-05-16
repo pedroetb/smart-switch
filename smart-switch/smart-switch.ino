@@ -11,28 +11,28 @@
 
 void setup() {
 
-  commonSetup();
-  relaySetup();
-  measureSetup();
-  timerSetup();
-  noiseSetup();
-  wifiSetup();
-  httpSetup();
-  mqttSetup();
-  otaSetup();
+	commonSetup();
+	relaySetup();
+	measureSetup();
+	timerSetup();
+	noiseSetup();
+	wifiSetup();
+	httpSetup();
+	mqttSetup();
+	otaSetup();
 
-  logSerialMessage("\n--- Setup completed in " + (String)millis() + " ms ---\n\n");
+	logSerialMessage("\n--- Setup completed in " + (String)millis() + " ms ---\n\n");
 }
 
 void loop() {
 
-  uint32_t currEvalTime = millis();
+	uint32_t currEvalTime = millis();
 
-  evalMeasureStatus(currEvalTime);
-  evalTimerStatus(currEvalTime);
-  evalNoiseStatus(currEvalTime);
-  evalWifiStatus(currEvalTime);
-  evalHttpStatus(currEvalTime);
-  evalMqttStatus(currEvalTime);
-  evalOtaStatus(currEvalTime);
+	evalMeasureStatus(currEvalTime);
+	evalTimerStatus(currEvalTime);
+	evalNoiseStatus(currEvalTime);
+	evalWifiStatus(currEvalTime);
+	evalHttpStatus(currEvalTime);
+	evalMqttStatus(currEvalTime);
+	evalOtaStatus(currEvalTime);
 }
