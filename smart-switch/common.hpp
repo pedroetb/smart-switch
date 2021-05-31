@@ -11,8 +11,8 @@
 
 void commonSetup();
 void restartBoard();
-String getDeviceStatus();
-void logSerialMessage(String message);
-void logMessage(String message);
+void getDeviceStatus(char *deviceStatusBuffer);
+void logSerialMessage(const char *message);
+void logMessage(const char *message);
 
 #endif

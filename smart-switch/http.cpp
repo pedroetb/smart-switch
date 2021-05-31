@@ -1,117 +1,143 @@
 #include "http.hpp"
 
 ESP8266WebServer server(httpServerPort);
-String httpTitle;
+char httpTitle[38];
 uint32_t lastHttpEvalTime = 0;
 bool httpEnabled = true;
 
+void logHttpRequestUri() {
+
+	char msg[52] = "HTTP received uri: ";
+	strcat(msg, server.uri().c_str());
+	logMessage(msg);
+}
+
+void logHttpRequestArg(const uint8_t &i) {
+
+	char msg[52] = "HTTP received arg: ";
+	strcat(msg, server.argName(i).c_str());
+	strcat(msg, "=");
+	strcat(msg, server.arg(i).c_str());
+	logMessage(msg);
+}
+
 void printHttpRequest() {
 
-	logMessage("HTTP received uri: " + server.uri());
+	logHttpRequestUri();
 	uint8_t argsCount = server.args();
 	for (uint8_t i = 0; i < argsCount; i++) {
-		logMessage("HTTP received arg: " + server.argName(i) + "=" + server.arg(i));
+		logHttpRequestArg(i);
 	}
 }
 
 bool checkFormatIsHtml() {
 
 	if (server.hasArg("format")) {
-		String statusFormat = server.arg("format");
-		return statusFormat.equals("html");
+		char format[5];
+		strcpy(format, server.arg("format").c_str());
+		return strcmp(format, "html") == 0;
 	}
 	return false;
 }
 
-String getHttpActionResponse(String message) {
+void sendResponse(uint16_t statusCode, const char *contentType, const char *content) {
 
-	return
-		"<html>"
-			"<head>"
-				"<meta http-equiv=\"refresh\" content=\"" + (String)httpRedirectTimeout + "; url=/\"/>"
-				"<title>" +
-					httpTitle + "/action"
-				"</title>"
-			"</head>"
-			"<body>"
-				"<pre>" +
-					message +
-				"</pre>"
-				"<a href=\"/\">"
-					"Go to index"
-				"</a>"
-			"</body>"
-		"</html>";
+	server.send(statusCode, contentType, content, strlen(content));
 }
 
-void sendResponse(uint16_t statusCode, String responseMessage) {
+void getHttpResponseStart(char *htmlResponse, const char *titleSuffix = "") {
+
+	strcpy(htmlResponse, "<html><head>");
+	if (strcmp(titleSuffix, "") != 0) {
+		strcat(htmlResponse, "<meta http-equiv=\"refresh\" content=\"");
+		char tmp[4];
+		if (strcmp(titleSuffix, "/action") == 0) {
+			itoa(httpRedirectTimeout, tmp, 10);
+			strcat(htmlResponse, tmp);
+			strcat(htmlResponse, "; url=/");
+		} else if (strcmp(titleSuffix, "/status") == 0) {
+			itoa(httpRefreshInterval, tmp, 10);
+			strcat(htmlResponse, tmp);
+		}
+		strcat(htmlResponse, "\"/>");
+	}
+	strcat(htmlResponse, "<title>");
+	strcat(htmlResponse, httpTitle);
+	strcat(htmlResponse, titleSuffix);
+	strcat(htmlResponse, "</title></head><body>");
+}
+
+void getHttpResponseEnd(char *htmlResponse) {
+
+	strcat(htmlResponse, "</body></html>");
+}
+
+void getHttpActionResponse(char *htmlResponse, const char *message) {
+
+	getHttpResponseStart(htmlResponse, "/action");
+	strcat(htmlResponse, "<pre>");
+	strcat(htmlResponse, message);
+	strcat(htmlResponse, "</pre><a href=\"/\">Go to index</a>");
+	getHttpResponseEnd(htmlResponse);
+}
+
+void sendActionResponse(uint16_t statusCode, const char *responseMessage) {
 
 	if (checkFormatIsHtml()) {
-		server.send(statusCode, "text/html", getHttpActionResponse(responseMessage));
+		char htmlResponse[256];
+		getHttpActionResponse(htmlResponse, responseMessage);
+		sendResponse(statusCode, "text/html", htmlResponse);
 	} else {
-		server.send(statusCode, "text/plain", responseMessage);
+		sendResponse(statusCode, "text/plain", responseMessage);
 	}
 }
 
-void sendSuccessResponse(String successMessage) {
+void sendActionSuccessResponse(const char *successMessage) {
 
-	sendResponse(200, successMessage);
+	sendActionResponse(200, successMessage);
 }
 
 void handleOn() {
 
 	printHttpRequest();
-	enableRelay();
-	sendSuccessResponse("Relay set to on");
+	switchOn();
+	sendActionSuccessResponse("Relay set to on");
 }
 
 void handleOff() {
 
 	printHttpRequest();
-	disableRelay();
-	sendSuccessResponse("Relay set to off");
+	switchOff();
+	sendActionSuccessResponse("Relay set to off");
 }
 
 void handleToggle() {
 
 	printHttpRequest();
 	toggleRelay();
-	sendSuccessResponse("Relay toggled");
+	sendActionSuccessResponse("Relay toggled");
 }
 
-String getHttpStatusResponse(String deviceStatus) {
+void getHttpStatusResponse(char *htmlResponse, const char *deviceStatus) {
 
-	return
-		"<html>"
-			"<head>"
-				"<meta http-equiv=\"refresh\" content=\"" + (String)httpRefreshInterval + "\"/>"
-				"<title>" +
-					httpTitle + "/status"
-				"</title>"
-			"</head>"
-			"<body>"
-				"<pre>" +
-					deviceStatus +
-				"</pre>"
-				"<a href>"
-					"Refresh"
-				"</a>"
-				" | "
-				"<a href=\"/\">"
-					"Go to index"
-				"</a>"
-			"</body>"
-		"</html>";
+	getHttpResponseStart(htmlResponse, "/status");
+	strcat(htmlResponse, "<pre>");
+	strcat(htmlResponse, deviceStatus);
+	strcat(htmlResponse, "</pre><a href>Refresh</a> | <a href=\"/\">Go to index</a>");
+	getHttpResponseEnd(htmlResponse);
 }
 
 void handleStatus() {
 
 	printHttpRequest();
-	String deviceStatus = getDeviceStatus();
+	char deviceStatus[400];
+	getDeviceStatus(deviceStatus);
 	if (checkFormatIsHtml()) {
-		server.send(200, "text/html", getHttpStatusResponse(deviceStatus));
+		char htmlResponse[656];
+		getHttpStatusResponse(htmlResponse, deviceStatus);
+		sendResponse(200, "text/html", htmlResponse);
 	} else {
-		server.send(200, "application/json", deviceStatus);
+		sendResponse(200, "application/json", deviceStatus);
 	}
 }
 
@@ -119,38 +145,49 @@ void handleEnableNoise() {
 
 	printHttpRequest();
 	enableNoise();
-	sendSuccessResponse("Noise trigger enabled");
+	sendActionSuccessResponse("Noise trigger enabled");
 }
 
 void handleDisableNoise() {
 
 	printHttpRequest();
 	disableNoise();
-	sendSuccessResponse("Noise trigger disabled");
+	sendActionSuccessResponse("Noise trigger disabled");
 }
 
 void handleEnableTimer() {
 
 	printHttpRequest();
 	enableTimer();
-	sendSuccessResponse("Auto-off timer enabled");
+	sendActionSuccessResponse("Auto-off timer enabled");
 }
 
 void handleDisableTimer() {
 
 	printHttpRequest();
 	disableTimer();
-	sendSuccessResponse("Auto-off timer disabled");
+	sendActionSuccessResponse("Auto-off timer disabled");
+}
+
+void sendTimeoutSet(const char *timeout) {
+
+	char msg[44] = "Auto-off timer timeout set to ";
+	strcat(msg, timeout);
+	strcat(msg, " ms");
+
+	sendActionSuccessResponse(msg);
 }
 
 void handleSetTimer() {
 
 	printHttpRequest();
 	if (server.hasArg("timeout")) {
-		setTimerTimeout(server.arg("timeout"));
-		sendSuccessResponse("Auto-off timer timeout set to " + (String)getTimerTimeout() + " ms");
+		char timeout[11];
+		strcpy(timeout, server.arg("timeout").c_str());
+		setTimerTimeout(timeout);
+		sendTimeoutSet(timeout);
 	} else {
-		sendResponse(400, "Missing argument: 'timeout'");
+		sendActionResponse(400, "Missing argument: 'timeout'");
 	}
 }
 
@@ -158,128 +195,134 @@ void handleEnableMqtt() {
 
 	printHttpRequest();
 	enableMqtt();
-	sendSuccessResponse("MQTT communication enabled");
+	sendActionSuccessResponse("MQTT communication enabled");
 }
 
 void handleDisableMqtt() {
 
 	printHttpRequest();
 	disableMqtt();
-	sendSuccessResponse("MQTT communication disabled");
+	sendActionSuccessResponse("MQTT communication disabled");
 }
 
 void handleEnableOta() {
 
 	printHttpRequest();
 	enableOta();
-	sendSuccessResponse("OTA update enabled");
+	sendActionSuccessResponse("OTA update enabled");
 }
 
 void handleDisableOta() {
 
 	printHttpRequest();
 	disableOta();
-	sendSuccessResponse("OTA update disabled");
+	sendActionSuccessResponse("OTA update disabled");
 }
 
 void handleReset() {
 
 	printHttpRequest();
-	server.send(200, "text/plain", "Restarting..");
+	sendActionSuccessResponse("Restarting..");
 	restartBoard();
 }
 
 void handleNotFound() {
 
 	printHttpRequest();
-	sendResponse(404, "Not found");
+	sendActionResponse(404, "Not found");
 }
 
-String getHttpRootResponse() {
+void getHttpRootSetTimerSection(char *htmlResponse, const char *action) {
 
-	String res =
-		"<html>"
-			"<head>"
-				"<title>" +
-					httpTitle +
-				"</title>"
-			"</head>"
-			"<body>"
-				"<h1>" +
-					httpTitle +
-				"</h1>"
-				"<ul>";
+	constexpr uint8_t timeoutsLength = 10;
+	constexpr char *timeoutLabels[timeoutsLength] = {
+		"1m", "5m", "10m", "30m", "1h", "6h", "12h", "1d", "1w", "1mo"
+	};
+	constexpr char *timeoutValues[timeoutsLength] = {
+		"60000", "300000", "600000", "1800000", "3600000", "21600000", "43200000", "86400000", "604800000", "2628000000"
+	};
 
+	strcat(htmlResponse, action);
+
+	char timeoutValue[11];
+	char timeoutLabel[4];
+	for (uint8_t i = 0; i < timeoutsLength; i++) {
+		strcpy(timeoutLabel, timeoutLabels[i]);
+		strcpy(timeoutValue, timeoutValues[i]);
+
+		strcat(htmlResponse, " <a href=\"");
+		strcat(htmlResponse, action);
+		strcat(htmlResponse, "?format=html&timeout=");
+		strcat(htmlResponse, timeoutValue);
+		strcat(htmlResponse, "\">[ ");
+		strcat(htmlResponse, timeoutLabel);
+		strcat(htmlResponse, " ]</a>");
+	}
+}
+
+void getHttpRootStatusSection(char *htmlResponse, const char *action) {
+
+	strcat(htmlResponse, action);
+	strcat(htmlResponse, " <a href=\"");
+	strcat(htmlResponse, action);
+	strcat(htmlResponse, "?format=html\">[ HTML ]</a>");
+	strcat(htmlResponse, " <a href=\"");
+	strcat(htmlResponse, action);
+	strcat(htmlResponse, "?format=json\">[ JSON ]</a>");
+}
+
+void getHttpRootGenericSection(char *htmlResponse, const char *action) {
+
+	strcat(htmlResponse, " <a href=\"");
+	strcat(htmlResponse, action);
+	strcat(htmlResponse, "?format=html\">");
+	strcat(htmlResponse, action);
+	strcat(htmlResponse, "</a>");
+}
+
+void getHttpRootResponse(char *htmlResponse) {
+
+	getHttpResponseStart(htmlResponse);
+	strcat(htmlResponse, "<h1>");
+	strcat(htmlResponse, httpTitle);
+	strcat(htmlResponse, "</h1><ul>");
+
+	char action[16];
 	for (uint8_t i = 0; i < actionsLength; i++) {
-		String action = actions[i];
-		if (action.equals("/enable-http") || action.equals("/disable-http")) {
+		strcpy(action, actions[i]);
+		if (strcmp(action, "/enable-http") == 0 || strcmp(action, "/disable-http") == 0) {
 			continue;
 		}
-		res +=
-					"<li>";
-		if (action.equals("/set-timer")) {
-			res +=
-							action +
-							" <a href=\"" + action + "?format=html&timeout=60000\">"
-								"[ 1m ]"
-							"</a>"
-							" <a href=\"" + action + "?format=html&timeout=300000\">"
-								"[ 5m ]"
-							"</a>"
-							" <a href=\"" + action + "?format=html&timeout=600000\">"
-								"[ 10m ]"
-							"</a>"
-							" <a href=\"" + action + "?format=html&timeout=1800000\">"
-								"[ 30m ]"
-							"</a>"
-							" <a href=\"" + action + "?format=html&timeout=3600000\">"
-								"[ 1h ]"
-							"</a>"
-							" <a href=\"" + action + "?format=html&timeout=21600000\">"
-								"[ 6h ]"
-							"</a>"
-							" <a href=\"" + action + "?format=html&timeout=43200000\">"
-								"[ 12h ]"
-							"</a>"
-							" <a href=\"" + action + "?format=html&timeout=86400000\">"
-								"[ 1d ]"
-							"</a>"
-							" <a href=\"" + action + "?format=html&timeout=604800000\">"
-								"[ 1w ]"
-							"</a>"
-							" <a href=\"" + action + "?format=html&timeout=2628000000\">"
-								"[ 1mo ]"
-							"</a>";
-		} else if (action.equals("/status")) {
-			res +=
-							action +
-							" <a href=\"" + action + "?format=html\">" +
-								"[ HTML ]"
-							"</a>"
-							" <a href=\"" + action + "?format=json\">" +
-								"[ JSON ]"
-							"</a>";
+		strcat(htmlResponse, "<li>");
+		if (strcmp(action, "/set-timer") == 0) {
+			getHttpRootSetTimerSection(htmlResponse, action);
+		} else if (strcmp(action, "/status") == 0) {
+			getHttpRootStatusSection(htmlResponse, action);
 		} else {
-			res +=
-							"<a href=\"" + action + "?format=html\">" +
-								action +
-							"</a>";
+			getHttpRootGenericSection(htmlResponse, action);
 		}
-		res +=
-					"</li>";
+		strcat(htmlResponse, "</li>");
 	}
-	res +=
-				"</ul>"
-			"</body>"
-		"</html>";
 
-	return res;
+	strcat(htmlResponse, "</ul>");
+	getHttpResponseEnd(htmlResponse);
 }
 
 void handleRoot() {
 
 	printHttpRequest();
-	server.send(200, "text/html", getHttpRootResponse());
+	char htmlResponse[1600];
+	getHttpRootResponse(htmlResponse);
+	sendResponse(200, "text/html", htmlResponse);
+}
+
+void logHttpConnected() {
+
+	char msg[34] = "HTTP server started on port ";
+	char port[6];
+	itoa(httpServerPort, port, 10);
+	strcat(msg, port);
+	logMessage(msg);
 }
 
 void httpConnect() {
@@ -289,20 +332,28 @@ void httpConnect() {
 	}
 
 	server.begin();
-	logSerialMessage("HTTP server started on port " + (String)httpServerPort);
+	logHttpConnected();
 }
 
 void httpDisconnect() {
 
 	server.close();
-	logSerialMessage("HTTP server stopped");
+	logMessage("HTTP server stopped");
+}
+
+void setHttpTitle() {
+
+	strcpy(httpTitle, rootName);
+	strcat(httpTitle, "-");
+	strcat(httpTitle, commonName);
+	strcat(httpTitle, "-");
+	strcat(httpTitle, uniqueId);
 }
 
 void httpSetup() {
 
 	logSerialMessage("\n--- HTTP setup ---");
-
-	httpTitle = (String)rootName + "-" + commonName + "-" + uniqueId;
+	setHttpTitle();
 
 	server.on("/", HTTP_GET, handleRoot);
 	server.on("/on", HTTP_GET, handleOn);

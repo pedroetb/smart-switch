@@ -1,21 +1,41 @@
 #include "ota.hpp"
 
-String otaHostname;
+char otaHostname[65];
 uint32_t lastOtaEvalTime = 0;
 int8_t lastPercentage = -1;
 bool otaEnabled = false;
 bool otaListening = false;
 
+void logOtaStart(const char *updateType) {
+
+	char msg[32] = "OTA update (";
+	strcat(msg, updateType);
+	strcat(msg, ") started");
+	logMessage(msg);
+}
+
 void onOtaStart() {
 
 	mqttConnect();
-	String updateType;
+
+	char updateType[11];
 	if (ArduinoOTA.getCommand() == U_FLASH) {
-		updateType = "sketch";
+		strcpy(updateType, "sketch");
 	} else {
-		updateType = "filesystem";
+		strcpy(updateType, "filesystem");
 	}
-	logMessage("OTA update (" + updateType + ") started");
+
+	logOtaStart(updateType);
+}
+
+void logOtaProgress(const uint8_t percentage) {
+
+	char msg[27] = "OTA update progress: ";
+	char tmp[4];
+	itoa(percentage, tmp, 10);
+	strcat(msg, tmp);
+	strcat(msg, "%");
+	logMessage(msg);
 }
 
 void onOtaProgress(uint32_t progress, uint32_t total) {
@@ -23,7 +43,7 @@ void onOtaProgress(uint32_t progress, uint32_t total) {
 	int8_t percentage = progress * 100 / total;
 	uint8_t progressMarkReached = !(percentage % 25);
 	if (progressMarkReached && percentage > lastPercentage) {
-		logMessage("OTA update progress: " + (String)percentage + "%");
+		logOtaProgress(percentage);
 		lastPercentage = percentage;
 	}
 }
@@ -34,32 +54,61 @@ void onOtaEnd() {
 	restartBoard();
 }
 
+void logOtaError(const char *errorType) {
+
+	char msg[34] = "OTA update failed: ";
+	strcat(msg, errorType);
+	strcat(msg, " error");
+	logMessage(msg);
+}
+
 void onOtaError(ota_error_t error) {
 
-	String errorType;
+	char errorType[8];
 	if (error == OTA_AUTH_ERROR) {
-		errorType = "Auth";
+		strcpy(errorType, "Auth");
 	} else if (error == OTA_BEGIN_ERROR) {
-		errorType = "Begin";
+		strcpy(errorType, "Begin");
 	} else if (error == OTA_CONNECT_ERROR) {
-		errorType = "Connect";
+		strcpy(errorType, "Connect");
 	} else if (error == OTA_RECEIVE_ERROR) {
-		errorType = "Receive";
+		strcpy(errorType, "Receive");
 	} else if (error == OTA_END_ERROR) {
-		errorType = "End";
+		strcpy(errorType, "End");
 	} else {
-		errorType = "Unknown";
+		strcpy(errorType, "Unknown");
 	}
-	logMessage("OTA update failed: " + (String)errorType + " (" + (String)error + ") error");
+	logOtaError(errorType);
+}
+
+void setOtaHostname() {
+
+	strcpy(otaHostname, rootName);
+	strcat(otaHostname, "-");
+	strcat(otaHostname, commonName);
+	strcat(otaHostname, "-");
+	strcat(otaHostname, uniqueId);
+}
+
+void logOtaSetupEnd() {
+
+	char msg[110] = "OTA configured at ";
+	strcat(msg, otaHostname);
+	strcat(msg, ":");
+	char port[6];
+	itoa(otaPort, port, 10);
+	strcat(msg, port);
+	strcat(msg, ", disabled by default");
+	logSerialMessage(msg);
 }
 
 void otaSetup() {
 
 	logSerialMessage("\n--- OTA setup ---");
 
-	otaHostname = (String)rootName + "-" + commonName + "-" + uniqueId;
+	setOtaHostname();
 
-	ArduinoOTA.setHostname(otaHostname.c_str());
+	ArduinoOTA.setHostname(otaHostname);
 	ArduinoOTA.setPort(otaPort);
 	ArduinoOTA.setRebootOnSuccess(false);
 
@@ -68,7 +117,20 @@ void otaSetup() {
 	ArduinoOTA.onEnd(onOtaEnd);
 	ArduinoOTA.onError(onOtaError);
 
-	logSerialMessage("OTA configured at " + otaHostname + ":" + (String)otaPort + ", disabled by default");
+	logOtaSetupEnd();
+}
+
+void logOtaConnect() {
+
+	char msg[91] = "OTA listening on ";
+	char ipBuffer[16];
+	getWifiIp(ipBuffer);
+	strcat(msg, ipBuffer);
+	strcat(msg, ":");
+	char port[6];
+	itoa(otaPort, port, 10);
+	strcat(msg, port);
+	logMessage(msg);
 }
 
 void otaConnect() {
@@ -79,7 +141,7 @@ void otaConnect() {
 
 	otaListening = true;
 	ArduinoOTA.begin();
-	logMessage("OTA listening on " + ArduinoOTA.getHostname() + ":" + (String)otaPort);
+	logOtaConnect();
 }
 
 void evalOtaStatus(uint32_t currEvalTime) {

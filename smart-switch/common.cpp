@@ -14,9 +14,14 @@ void restartBoard() {
 	ESP.restart();
 }
 
-String getDeviceStatus() {
+void getDeviceStatus(char *deviceStatusBuffer) {
 
-	char deviceStatusBuffer[400];
+	char macBuffer[18];
+	getWifiMac(macBuffer);
+	char ssidBuffer[33];
+	getWifiSsid(ssidBuffer);
+	char ipBuffer[16];
+	getWifiIp(ipBuffer);
 
 	sprintf(deviceStatusBuffer,
 		"{\n"
@@ -38,22 +43,19 @@ String getDeviceStatus() {
 			"\t\"mqttStatus\": %u,\n"
 			"\t\"otaEnabled\": %u\n"
 		"}",
-		getRelayStatus(), getMeasurePowerStatus(), getMeasureFrequency(), getNoiseEnabled(),
-		getNoiseValue(), getTimerEnabled(), getTimerElapsedTime(), getTimerTimeout(),
-		getWifiStatus(), getWifiMac().c_str(), getWifiSsid().c_str(), getWifiIp().c_str(),
+		getRelayStatus(), getMeasurePowerStatus(), getMeasureFrequency(), getNoiseEnabled(), getNoiseValue(),
+		getTimerEnabled(), getTimerElapsedTime(), getTimerTimeout(), getWifiStatus(), macBuffer, ssidBuffer, ipBuffer,
 		getWifiRssi(), getHttpEnabled(), getMqttEnabled(), getMqttStatus(), getOtaEnabled());
-
-	return (String)deviceStatusBuffer;
 }
 
-void logSerialMessage(String message) {
+void logSerialMessage(const char *message) {
 
 	if (serialLogEnabled) {
 		Serial.println(message);
 	}
 }
 
-void logMessage(String message) {
+void logMessage(const char *message) {
 
 	logSerialMessage(message);
 	logMqttMessage(message);

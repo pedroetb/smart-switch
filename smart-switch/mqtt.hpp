@@ -12,9 +12,9 @@
 
 void mqttSetup();
 void evalMqttStatus(uint32_t currEvalTime);
-void mqttCallback(char* topic, uint8_t* payload, uint8_t length);
+void mqttCallback(char *topic, uint8_t *payload, uint8_t length);
 void mqttConnect();
-void logMqttMessage(String message);
+void logMqttMessage(const char *message);
 void enableMqtt();
 void disableMqtt();
 bool getMqttEnabled();

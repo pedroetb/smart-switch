@@ -12,7 +12,7 @@ void enableTimer();
 void disableTimer();
 uint32_t getTimerElapsedTime();
 void setTimerTimeout(uint32_t timeout);
-void setTimerTimeout(String timeoutStr);
+void setTimerTimeout(const char *timeout);
 uint32_t getTimerTimeout();
 bool getTimerEnabled();
 

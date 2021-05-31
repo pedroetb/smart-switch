@@ -7,9 +7,9 @@
 
 void wifiSetup();
 void evalWifiStatus(uint32_t currEvalTime);
-String getWifiMac();
-String getWifiSsid();
-String getWifiIp();
+void getWifiMac(char *macBuffer);
+void getWifiSsid(char *ssidBuffer);
+void getWifiIp(char *ipBuffer);
 int32_t getWifiRssi();
 bool getWifiStatus();
 

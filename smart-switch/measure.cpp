@@ -29,6 +29,19 @@ void measureSetup() {
 	logSerialMessage("Listening signal zero-crossing events");
 }
 
+void logMeasureChange() {
+
+	char msg[29] = "Measure power status is: ";
+
+	if (measurePowerStatus) {
+		strcat(msg, "ON");
+	} else {
+		strcat(msg, "OFF");
+	}
+
+	logMessage(msg);
+}
+
 void handleMeasurePowerStatus(uint32_t currTime) {
 
 	if (measurePowerStatus && lastZeroCrossingTime > 0 && lastZeroCrossingTime < currTime &&
@@ -40,7 +53,7 @@ void handleMeasurePowerStatus(uint32_t currTime) {
 
 	if (lastMeasurePowerStatus != measurePowerStatus) {
 		lastMeasurePowerStatus = measurePowerStatus;
-		logMessage("Measure power status is: " + (String)(measurePowerStatus ? "ON" : "OFF"));
+		logMeasureChange();
 	}
 }
 

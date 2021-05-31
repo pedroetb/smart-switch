@@ -15,25 +15,34 @@ void wifiSetup() {
 	logSerialMessage("WiFi connection is starting");
 }
 
-String getWifiMac() {
+void getWifiMac(char *macBuffer) {
 
 	uint8_t mac[6];
 	WiFi.macAddress(mac);
 
-	char macBuffer[17];
 	sprintf(macBuffer, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
-
-	return macBuffer;
 }
 
-String getWifiSsid() {
+void getWifiSsid(char *ssidBuffer) {
 
-	return WiFi.SSID();
+	strcpy(ssidBuffer, WiFi.SSID().c_str());
 }
 
-String getWifiIp() {
+void getWifiIp(char *ipBuffer) {
 
-	return WiFi.localIP().toString();
+	IPAddress ip = WiFi.localIP();
+	char tmp[4];
+	itoa(ip[0], tmp, 10);
+	strcpy(ipBuffer, tmp);
+	strcat(ipBuffer, ".");
+	itoa(ip[1], tmp, 10);
+	strcat(ipBuffer, tmp);
+	strcat(ipBuffer, ".");
+	itoa(ip[2], tmp, 10);
+	strcat(ipBuffer, tmp);
+	strcat(ipBuffer, ".");
+	itoa(ip[3], tmp, 10);
+	strcat(ipBuffer, tmp);
 }
 
 int32_t getWifiRssi() {
@@ -49,17 +58,37 @@ bool getWifiStatus() {
 void printWifiInfo() {
 
 	logSerialMessage("\n--- WiFi status ---");
-	logSerialMessage("MAC address: " + getWifiMac());
-	logSerialMessage("SSID: " + getWifiSsid());
-	logSerialMessage("IP address: " + getWifiIp());
-	logSerialMessage("Signal strength (RSSI) in dBm: " + String(getWifiRssi()) + "\n");
+
+	char msg[64];
+	char tmp[33];
+
+	strcpy(msg, "MAC address: ");
+	getWifiMac(tmp);
+	strcat(msg, tmp);
+	logSerialMessage(msg);
+
+	strcpy(msg, "SSID: ");
+	getWifiSsid(tmp);
+	strcat(msg, tmp);
+	logSerialMessage(msg);
+
+	strcpy(msg, "IP address: ");
+	getWifiIp(tmp);
+	strcat(msg, tmp);
+	logSerialMessage(msg);
+
+	strcpy(msg, "Signal strength (RSSI) in dBm: ");
+	itoa(getWifiRssi(), tmp, 10);
+	strcat(msg, tmp);
+	strcat(msg, "\n");
+	logSerialMessage(msg);
 }
 
 void notifyWifiReconnected() {
 
 	if (wifiFailure) {
 		wifiFailure = false;
-		logSerialMessage("WiFi connection restablished");
+		logMessage("WiFi connection restablished");
 	}
 }
 
@@ -84,7 +113,7 @@ void wifiConnect(uint32_t currWifiConnectTime) {
 		if (getWifiStatus()) {
 			connectRetriesSpent = 0;
 			lastWifiConnectTime = 0;
-			logSerialMessage("Connected to WiFi");
+			logMessage("Connected to WiFi");
 			printWifiInfo();
 			notifyWifiReconnected();
 			return;

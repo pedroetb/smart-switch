@@ -8,11 +8,11 @@
 constexpr uint32_t bauds = 9600;
 constexpr bool serialLogEnabled = true;
 constexpr bool mqttLogEnabled = true;
-constexpr char* rootName = "pedroetb";
-constexpr char* commonName = "smart-switch";
-constexpr char* uniqueId = "001";
+constexpr char rootName[17] = "pedroetb";
+constexpr char commonName[17] = "smart-switch";
+constexpr char uniqueId[4] = "001";
 constexpr uint8_t actionsLength = 17;
-constexpr char* actions[actionsLength] = {
+constexpr char *actions[actionsLength] = {
 	"/", "/status", "/reset",
 	"/on", "/off", "/toggle",
 	"/enable-noise", "/disable-noise",
@@ -42,8 +42,8 @@ constexpr uint16_t noiseRepetitiveDebounceTimeout = 600;
 constexpr uint16_t noisePatternDebounceTimeout = 800;
 
 // wifi
-constexpr char* wifiSsid = "<ssid>";
-constexpr char* wifiPass = "<pass>";
+constexpr char *wifiSsid = "<ssid>";
+constexpr char *wifiPass = "<pass>";
 constexpr uint8_t wifiConnectRetries = 15;
 constexpr uint16_t wifiConnectTimeout = 1500;
 constexpr uint16_t wifiEvalTimeout = 30000;
@@ -55,10 +55,10 @@ constexpr uint8_t httpRefreshInterval = 30;
 constexpr uint16_t httpEvalTimeout = 1000;
 
 // mqtt
-constexpr char* mqttBrokerUrl = "<broker>";
+constexpr char *mqttBrokerUrl = "<broker>";
 constexpr uint16_t mqttBrokerPort = 1883;
-constexpr char* mqttUser = "<user>";
-constexpr char* mqttPass = "<pass>";
+constexpr char *mqttUser = "<user>";
+constexpr char *mqttPass = "<pass>";
 constexpr uint16_t mqttMaxPacketSize = 256;
 constexpr uint8_t mqttKeepAlive = 15;
 constexpr uint8_t mqttSocketTimeout = 15;

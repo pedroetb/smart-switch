@@ -22,9 +22,22 @@ bool getRelayStatus() {
 	return relayStatus;
 }
 
+void logApplyRelayStatus() {
+
+	char msg[14] = "Relay is: ";
+
+	if (relayStatus) {
+		strcat(msg, "ON");
+	} else {
+		strcat(msg, "OFF");
+	}
+
+	logMessage(msg);
+}
+
 void applyRelayStatus() {
 
-	logMessage("Relay is: " + (String)(relayStatus ? "ON" : "OFF"));
+	logApplyRelayStatus();
 	writeRelayStatus();
 }
 
@@ -44,4 +57,20 @@ void toggleRelay() {
 
 	relayStatus = !relayStatus;
 	applyRelayStatus();
+}
+
+void switchOn() {
+
+	bool powerStatus = getMeasurePowerStatus();
+	if (!powerStatus) {
+		toggleRelay();
+	}
+}
+
+void switchOff() {
+
+	bool powerStatus = getMeasurePowerStatus();
+	if (powerStatus) {
+		toggleRelay();
+	}
 }

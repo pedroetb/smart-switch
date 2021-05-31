@@ -9,6 +9,16 @@
 #include "mqtt.hpp"
 #include "ota.hpp"
 
+void logSetupEnd() {
+
+	char msg[40] = "\n--- Setup completed in ";
+	char tmp[5];
+	ltoa(millis(), tmp, 10);
+	strcat(msg, tmp);
+	strcat(msg, " ms ---\n\n");
+	logSerialMessage(msg);
+}
+
 void setup() {
 
 	commonSetup();
@@ -21,7 +31,7 @@ void setup() {
 	mqttSetup();
 	otaSetup();
 
-	logSerialMessage("\n--- Setup completed in " + (String)millis() + " ms ---\n\n");
+	logSetupEnd();
 }
 
 void loop() {

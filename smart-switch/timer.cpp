@@ -5,20 +5,42 @@ uint32_t timerStartTime = 0;
 bool timerEnabled = true;
 bool timerRunning = false;
 
+void logTimerSetupEnd() {
+
+	char msg[36] = "Auto-off timer set to ";
+	char tmp[11];
+	itoa(timerTimeout, tmp, 10);
+	strcat(msg, tmp);
+	strcat(msg, " ms");
+
+	logSerialMessage(msg);
+}
+
 void timerSetup() {
 
 	logSerialMessage("\n--- Timer setup ---");
 
 	if (timerEnabled) {
-		logSerialMessage("Auto-off timer set to " + (String)timerTimeout + " ms");
+		logTimerSetupEnd();
 	}
+}
+
+void logTimerStart() {
+
+	char msg[32] = "Auto-off timer will trigger in ";
+	char tmp[11];
+	itoa(timerTimeout, tmp, 10);
+	strcat(msg, tmp);
+	strcat(msg, " ms");
+
+	logMessage(msg);
 }
 
 void startTimer(uint32_t startTime) {
 
 	timerStartTime = startTime;
 	timerRunning = true;
-	logMessage("Auto-off timer will trigger in " + (String)timerTimeout + " ms");
+	logTimerStart();
 }
 
 void clearTimer() {
@@ -89,15 +111,26 @@ void evalTimerStatus(uint32_t currEvalTime) {
 	triggerTimer();
 }
 
+void logTimerTimeoutSet(uint32_t timeout) {
+
+	char msg[45] = "Auto-off timer timeout set to ";
+	char tmp[11];
+	itoa(timeout, tmp, 10);
+	strcat(msg, tmp);
+	strcat(msg, " ms");
+
+	logMessage(msg);
+}
+
 void setTimerTimeout(uint32_t timeout) {
 
 	timerTimeout = timeout;
-	logMessage("Auto-off timer timeout set to " + (String)timeout + " ms");
+	logTimerTimeoutSet(timeout);
 }
 
-void setTimerTimeout(String timeoutStr) {
+void setTimerTimeout(const char *timeout) {
 
-	uint32_t timeoutNum = strtoul(timeoutStr.c_str(), 0, 10);
+	uint32_t timeoutNum = strtoul(timeout, 0, 10);
 	setTimerTimeout(timeoutNum);
 }
 

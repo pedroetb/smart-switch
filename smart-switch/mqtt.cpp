@@ -2,14 +2,42 @@
 
 WiFiClient wifiClient;
 PubSubClient mqttClient;
-String mqttClientId;
-String mqttOutputTopic;
-String mqttInputTopic;
-char messageBuffer[mqttMaxPacketSize + 1];
+char mqttClientId[38];
+char mqttOutputTopic[41];
+char mqttInputTopic[45];
 uint32_t lastMqttEvalTime = 0;
 bool previouslyConnected = false;
 bool mqttDisconnected = true;
 bool mqttEnabled = true;
+
+void setMqttClientId() {
+
+	strcpy(mqttClientId, rootName);
+	strcat(mqttClientId, "-");
+	strcat(mqttClientId, commonName);
+	strcat(mqttClientId, "-");
+	strcat(mqttClientId, uniqueId);
+}
+
+void setMqttOutputTopic() {
+
+	strcpy(mqttOutputTopic, "/");
+	strcat(mqttOutputTopic, rootName);
+	strcat(mqttOutputTopic, "/");
+	strcat(mqttOutputTopic, commonName);
+	strcat(mqttOutputTopic, "/output");
+}
+
+void setMqttInputTopic() {
+
+	strcpy(mqttInputTopic, "/");
+	strcat(mqttInputTopic, rootName);
+	strcat(mqttInputTopic, "/");
+	strcat(mqttInputTopic, commonName);
+	strcat(mqttInputTopic, "/");
+	strcat(mqttInputTopic, uniqueId);
+	strcat(mqttInputTopic, "/input");
+}
 
 void mqttSetup() {
 
@@ -22,9 +50,9 @@ void mqttSetup() {
 	mqttClient.setKeepAlive(mqttKeepAlive);
 	mqttClient.setSocketTimeout(mqttSocketTimeout);
 
-	mqttClientId = (String)rootName + "-" + commonName + "-" + uniqueId;
-	mqttOutputTopic = (String)"/" + rootName + "/" + commonName + "/output";
-	mqttInputTopic = (String)"/" + rootName + "/" + commonName + "/" + uniqueId + "/input";
+	setMqttClientId();
+	setMqttOutputTopic();
+	setMqttInputTopic();
 
 	logSerialMessage("MQTT client started, waiting for connection");
 }
@@ -34,18 +62,31 @@ bool getMqttStatus() {
 	return mqttClient.connected();
 }
 
-void logMqttMessage(String message) {
+void logMqttMessage(const char *message) {
 
 	if (!mqttLogEnabled || !mqttEnabled) {
 		return;
 	}
 
-	message = "[" + (String)mqttClientId + "] " + message;
+	char msg[512] = "[";
+	strcat(msg, mqttClientId);
+	strcat(msg, "] ");
+	strcat(msg, message);
+
 	if (getMqttStatus()) {
-		mqttClient.beginPublish(mqttOutputTopic.c_str(), message.length(), false);
-		mqttClient.print(message);
+		mqttClient.beginPublish(mqttOutputTopic, strlen(msg), false);
+		mqttClient.print(msg);
 		mqttClient.endPublish();
 	}
+}
+
+void logMqttConnectionError() {
+
+	char msg[38] = "MQTT connection failed with error: ";
+	char tmp[3];
+	itoa(mqttClient.state(), tmp, 10);
+	strcat(msg, tmp);
+	logSerialMessage(msg);
 }
 
 void mqttConnect() {
@@ -54,14 +95,14 @@ void mqttConnect() {
 		logSerialMessage("MQTT was disconnected, establishing new connection");
 	}
 
-	if (mqttClient.connect(mqttClientId.c_str(), mqttUser, mqttPass)) {
+	if (mqttClient.connect(mqttClientId, mqttUser, mqttPass)) {
 		logMessage("MQTT connection established");
 		previouslyConnected = true;
 		mqttDisconnected = false;
-		mqttClient.unsubscribe(mqttInputTopic.c_str());
-		mqttClient.subscribe(mqttInputTopic.c_str());
+		mqttClient.unsubscribe(mqttInputTopic);
+		mqttClient.subscribe(mqttInputTopic);
 	} else {
-		logSerialMessage("MQTT connection failed with error: "+  (String)mqttClient.state());
+		logMqttConnectionError();
 	}
 }
 
@@ -70,7 +111,7 @@ void mqttDisconnect() {
 	if (mqttDisconnected) {
 		return;
 	}
-	mqttClient.unsubscribe(mqttInputTopic.c_str());
+	mqttClient.unsubscribe(mqttInputTopic);
 	mqttClient.disconnect();
 	mqttDisconnected = true;
 	if (previouslyConnected) {
@@ -78,84 +119,131 @@ void mqttDisconnect() {
 	}
 }
 
-String getMqttRootResponse() {
+void getMqttCommandAndParam(char *cmd, char *param, const char *mqttMsg) {
 
-	String res = "Actions:";
+	char *separatorLocation = strchr(mqttMsg, ' ');
+
+	if (separatorLocation == '\0') {
+		strcpy(cmd, mqttMsg);
+		param[0] = '\0';
+	} else {
+		uint8_t separatorPosition = separatorLocation - mqttMsg;
+
+		strncpy(cmd, mqttMsg, separatorPosition);
+		cmd[separatorPosition] = '\0';
+
+		strcpy(param, mqttMsg + separatorPosition + 1);
+	}
+}
+
+void getMqttRootResponse(char *res) {
+
+	char action[16] = "Actions:";
 	for (uint8_t i = 0; i < actionsLength; i++) {
-		String action = actions[i];
-		if (action.equals("/enable-mqtt") || action.equals("/disable-mqtt")) {
+		strcpy(action, actions[i]);
+		if (strcmp(action, "/enable-mqtt") == 0 || strcmp(action, "/disable-mqtt") == 0) {
 			continue;
 		}
 		if (i > 0) {
-			res += ",";
+			strcat(res, ",");
 		}
-		if (action.equals("/set-timer")) {
-			res += " [" + action + " <param>]";
-		} else {
-			res += " [" + action + "]";
+		strcat(res, "[");
+		strcat(res, action);
+		if (strcmp(action, "/set-timer") == 0) {
+			strcat(res, " <param>");
 		}
+		strcat(res, "]");
 	}
-
-	return res;
 }
 
-void handleMqttRequest(String message) {
+void onMqttRootRequest() {
 
-	uint8_t spacePosition = message.lastIndexOf(" ");
-	String command = message.substring(0, spacePosition);
-	String parameter = message.substring(spacePosition + 1);
+	char msg[500];
+	getMqttRootResponse(msg);
 
-	if (command.equals("/")) {
-		logMqttMessage(getMqttRootResponse());
-	} else if (command.equals("/on")) {
-		enableRelay();
-	} else if (command.equals("/off")) {
-		disableRelay();
-	} else if (command.equals("/toggle")) {
+	logMqttMessage(msg);
+}
+
+void onMqttStatusRequest() {
+
+	char status[400];
+	getDeviceStatus(status);
+
+	logMqttMessage(status);
+}
+
+void onMqttInvalidRequest(const char *cmd) {
+
+	char msg[150] = "Invalid MQTT command: ";
+	strcat(msg, cmd);
+
+	logMqttMessage(msg);
+}
+
+void handleMqttRequest(const char *mqttMsg) {
+
+	char cmd[17];
+	char param[11];
+	getMqttCommandAndParam(cmd, param, mqttMsg);
+
+	if (strcmp(cmd, "/") == 0) {
+		onMqttRootRequest();
+	} else if (strcmp(cmd, "/on") == 0) {
+		switchOn();
+	} else if (strcmp(cmd, "/off") == 0) {
+		switchOff();
+	} else if (strcmp(cmd, "/toggle") == 0) {
 		toggleRelay();
-	} else if (command.equals("/status")) {
-		logMqttMessage(getDeviceStatus());
-	} else if (command.equals("/enable-noise")) {
+	} else if (strcmp(cmd, "/status") == 0) {
+		onMqttStatusRequest();
+	} else if (strcmp(cmd, "/enable-noise") == 0) {
 		enableNoise();
-	} else if (command.equals("/disable-noise")) {
+	} else if (strcmp(cmd, "/disable-noise") == 0) {
 		disableNoise();
-	} else if (command.equals("/enable-timer")) {
+	} else if (strcmp(cmd, "/enable-timer") == 0) {
 		enableTimer();
-	} else if (command.equals("/disable-timer")) {
+	} else if (strcmp(cmd, "/disable-timer") == 0) {
 		disableTimer();
-	} else if (command.equals("/set-timer")) {
-		setTimerTimeout(parameter);
-	} else if (command.equals("/enable-http")) {
+	} else if (strcmp(cmd, "/set-timer") == 0) {
+		setTimerTimeout(param);
+	} else if (strcmp(cmd, "/enable-http") == 0) {
 		enableHttp();
-	} else if (command.equals("/disable-http")) {
+	} else if (strcmp(cmd, "/disable-http") == 0) {
 		disableHttp();
-	} else if (command.equals("/enable-ota")) {
+	} else if (strcmp(cmd, "/enable-ota") == 0) {
 		enableOta();
-	} else if (command.equals("/disable-ota")) {
+	} else if (strcmp(cmd, "/disable-ota") == 0) {
 		disableOta();
-	} else if (command.equals("/reset")) {
+	} else if (strcmp(cmd, "/reset") == 0) {
 		restartBoard();
 	} else {
-		logMessage("Invalid MQTT command: " + command);
+		onMqttInvalidRequest(cmd);
 	}
 }
 
-String getStringMessage(uint8_t* payload, uint8_t length) {
+void getMqttMessage(char *mqttMsg, uint8_t *payload, uint8_t length) {
 
 	for (uint8_t i = 0; i < length; i++) {
-		messageBuffer[i] = (char)payload[i];
+		mqttMsg[i] = (char)payload[i];
 	}
-	messageBuffer[length] = 0;
-
-	return messageBuffer;
+	mqttMsg[length] = '\0';
 }
 
-void mqttCallback(char* topic, uint8_t* payload, uint8_t length) {
+void logMqttReceivedMessage(const char *mqttMsg) {
+
+	char msg[143] = "MQTT received: ";
+	strcat(msg, mqttMsg);
+
+	logMessage(msg);
+}
+
+void mqttCallback(char *topic, uint8_t *payload, uint8_t length) {
 
 	delay(1000); // TODO needed because of PubSubClient bug (cannot publish from subscribe callback)
-	String mqttMessage = getStringMessage(payload, length);
-	logMessage("MQTT received: " + mqttMessage);
-	handleMqttRequest(mqttMessage);
+	char messageBuffer[length + 1];
+	getMqttMessage(messageBuffer, payload, length);
+	logMqttReceivedMessage(messageBuffer);
+	handleMqttRequest(messageBuffer);
 }
 
 void evalMqttStatus(uint32_t currEvalTime) {
@@ -194,8 +282,8 @@ void disableMqtt() {
 	}
 
 	mqttEnabled = false;
+	logMessage("MQTT communication disabled");
 	mqttDisconnect();
-	logSerialMessage("MQTT communication disabled");
 }
 
 bool getMqttEnabled() {
