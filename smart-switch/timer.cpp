@@ -74,7 +74,7 @@ void triggerTimer() {
 
 	clearTimer();
 	logMessage("Auto-off timer triggered");
-	toggleRelay();
+	switchOff();
 }
 
 uint32_t getTimerElapsedTime() {
