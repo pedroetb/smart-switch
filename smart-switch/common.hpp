@@ -12,6 +12,7 @@
 void commonSetup();
 void restartBoard();
 void getDeviceStatus(char *deviceStatusBuffer);
+bool validateChannel(const uint8_t channel);
 void logSerialMessage(const char *message);
 void logMessage(const char *message);
 

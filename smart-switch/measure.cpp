@@ -1,39 +1,56 @@
 #include "measure.hpp"
 
-bool measurePowerStatus = false;
-bool lastMeasurePowerStatus = false;
+bool powerStatus[channelsAvailable] = {};
+bool lastPowerStatus[channelsAvailable] = {};
 bool measuringFrequency = false;
-uint8_t zeroCrossingCounter = 0;
-uint8_t lastFrequencyMeasured = 0;
+uint8_t zeroCrossingCounter[channelsAvailable] = {};
+uint8_t lastFrequencyMeasured[channelsAvailable] = {};
 uint32_t lastFrequencyMeasureEndTime = 0;
 uint32_t lastFrequencyMeasureStartTime = 0;
-uint32_t lastZeroCrossingTime = 0;
+uint32_t lastZeroCrossingTime[channelsAvailable] = {};
 
-void ICACHE_RAM_ATTR zeroCrossingCallback() {
+void ICACHE_RAM_ATTR zeroCrossingManagement(uint8_t index) {
 
 	if (measuringFrequency) {
-		zeroCrossingCounter++;
+		zeroCrossingCounter[index]++;
 	}
 
-	lastZeroCrossingTime = millis();
-	measurePowerStatus = true;
+	lastZeroCrossingTime[index] = millis();
+	powerStatus[index] = true;
 }
+
+#define ZERO_CROSSING_CALLBACK_DEFINITION(channel) \
+void ICACHE_RAM_ATTR zeroCrossingCallback_##channel () { \
+	zeroCrossingManagement(channel - 1); \
+}
+// One macro call by channel
+ZERO_CROSSING_CALLBACK_DEFINITION(1)
+ZERO_CROSSING_CALLBACK_DEFINITION(2)
 
 void measureSetup() {
 
 	logSerialMessage("\n--- Measure setup ---");
 
-	pinMode(measurePin, INPUT_PULLUP);
-	attachInterrupt(digitalPinToInterrupt(measurePin), zeroCrossingCallback, RISING);
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+
+		pinMode(measurePin[i], INPUT_PULLUP);
+	}
+	// One attach by channel
+	attachInterrupt(digitalPinToInterrupt(measurePin[0]), zeroCrossingCallback_1, RISING);
+	attachInterrupt(digitalPinToInterrupt(measurePin[1]), zeroCrossingCallback_2, RISING);
 
 	logSerialMessage("Listening signal zero-crossing events");
 }
 
-void logMeasureChange() {
+void logMeasureChange(uint8_t index) {
 
-	char msg[29] = "Measure power status is: ";
+	char msg[37] = "Power status in channel #";
+	char tmp[4];
+	itoa(index + 1, tmp, 10);
+	strcat(msg, tmp);
+	strcat(msg, " is: ");
 
-	if (measurePowerStatus) {
+	if (powerStatus[index]) {
 		strcat(msg, "ON");
 	} else {
 		strcat(msg, "OFF");
@@ -42,18 +59,18 @@ void logMeasureChange() {
 	logMessage(msg);
 }
 
-void handleMeasurePowerStatus(uint32_t currTime) {
+void handlePowerStatus(uint8_t index, uint32_t currTime) {
 
-	if (measurePowerStatus && lastZeroCrossingTime > 0 && lastZeroCrossingTime < currTime &&
-		(uint32_t)(currTime - lastZeroCrossingTime) >= resetMeasurePowerStatusTimeout) {
+	if (powerStatus[index] && lastZeroCrossingTime[index] > 0 && lastZeroCrossingTime[index] < currTime &&
+		(uint32_t)(currTime - lastZeroCrossingTime[index]) >= resetPowerStatusTimeout) {
 
-		measurePowerStatus = false;
-		lastZeroCrossingTime = 0;
+		powerStatus[index] = false;
+		lastZeroCrossingTime[index] = 0;
 	}
 
-	if (lastMeasurePowerStatus != measurePowerStatus) {
-		lastMeasurePowerStatus = measurePowerStatus;
-		logMeasureChange();
+	if (lastPowerStatus[index] != powerStatus[index]) {
+		lastPowerStatus[index] = powerStatus[index];
+		logMeasureChange(index);
 	}
 }
 
@@ -67,8 +84,12 @@ void onMeasurementDone(uint32_t currTime) {
 
 	measuringFrequency = false;
 	lastFrequencyMeasureEndTime = currTime;
-	lastFrequencyMeasured = zeroCrossingCounter / measureFrequencyDivisor;
-	zeroCrossingCounter = 0;
+
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		lastFrequencyMeasured[i] = zeroCrossingCounter[i] / measureFrequencyDivisor;
+		zeroCrossingCounter[i] = 0;
+	}
+
 	lastFrequencyMeasureStartTime = 0;
 }
 
@@ -86,16 +107,29 @@ void measureFrequency(uint32_t currTime) {
 
 void evalMeasureStatus(uint32_t currEvalTime) {
 
-	handleMeasurePowerStatus(currEvalTime);
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		handlePowerStatus(i, currEvalTime);
+	}
+
 	measureFrequency(millis());
 }
 
-bool getMeasurePowerStatus() {
+bool getPowerStatus(uint8_t index) {
 
-	return measurePowerStatus;
+	return powerStatus[index];
 }
 
-uint8_t getMeasureFrequency() {
+bool getPowerStatus() {
 
-	return lastFrequencyMeasured;
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		if (getPowerStatus(i)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+uint8_t getNetFrequency(uint8_t index) {
+
+	return lastFrequencyMeasured[index];
 }

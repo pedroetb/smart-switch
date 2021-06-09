@@ -1,32 +1,43 @@
 #include "relay.hpp"
 
-bool relayStatus = false;
+bool relayStatus[channelsAvailable] = {};
 
-void writeRelayStatus() {
+bool getRelayStatus(uint8_t index) {
 
-	digitalWrite(relayPin, !relayStatus); // HIGH/LOW are inverted on NodeMCU
+	return relayStatus[index];
+}
+
+void writeRelayStatus(uint8_t index) {
+
+	digitalWrite(relayPin[index], !getRelayStatus(index)); // HIGH/LOW are inverted on NodeMCU
 }
 
 void relaySetup() {
 
 	logSerialMessage("\n--- Relay setup ---");
 
-	pinMode(relayPin, OUTPUT);
-	writeRelayStatus();
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		pinMode(relayPin[i], OUTPUT);
+		writeRelayStatus(i);
+	}
 
-	logSerialMessage("Managing relay state");
+	logSerialMessage("Managing relays state");
 }
 
-bool getRelayStatus() {
+void setRelayStatus(uint8_t index, bool status) {
 
-	return relayStatus;
+	relayStatus[index] = status;
 }
 
-void logApplyRelayStatus() {
+void logApplyRelayStatus(uint8_t index) {
 
-	char msg[14] = "Relay is: ";
+	char msg[37] = "Relay status in channel #";
+	char tmp[4];
+	itoa(index + 1, tmp, 10);
+	strcat(msg, tmp);
+	strcat(msg, " is: ");
 
-	if (relayStatus) {
+	if (getRelayStatus(index)) {
 		strcat(msg, "ON");
 	} else {
 		strcat(msg, "OFF");
@@ -35,42 +46,63 @@ void logApplyRelayStatus() {
 	logMessage(msg);
 }
 
-void applyRelayStatus() {
+void applyRelayStatus(uint8_t index) {
 
-	logApplyRelayStatus();
-	writeRelayStatus();
+	logApplyRelayStatus(index);
+	writeRelayStatus(index);
 }
 
-void enableRelay() {
+void enableRelay(uint8_t index) {
 
-	relayStatus = true;
-	applyRelayStatus();
+	setRelayStatus(index, true);
+	applyRelayStatus(index);
 }
 
-void disableRelay() {
+void disableRelay(uint8_t index) {
 
-	relayStatus = false;
-	applyRelayStatus();
+	setRelayStatus(index, false);
+	applyRelayStatus(index);
+}
+
+void toggleRelay(uint8_t index) {
+
+	setRelayStatus(index, !getRelayStatus(index));
+	applyRelayStatus(index);
 }
 
 void toggleRelay() {
 
-	relayStatus = !relayStatus;
-	applyRelayStatus();
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		toggleRelay(i);
+	}
+}
+
+void switchOn(uint8_t index) {
+
+	bool powerStatus = getPowerStatus(index);
+	if (!powerStatus) {
+		toggleRelay(index);
+	}
 }
 
 void switchOn() {
 
-	bool powerStatus = getMeasurePowerStatus();
-	if (!powerStatus) {
-		toggleRelay();
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		switchOn(i);
+	}
+}
+
+void switchOff(uint8_t index) {
+
+	bool powerStatus = getPowerStatus(index);
+	if (powerStatus) {
+		toggleRelay(index);
 	}
 }
 
 void switchOff() {
 
-	bool powerStatus = getMeasurePowerStatus();
-	if (powerStatus) {
-		toggleRelay();
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		switchOff(i);
 	}
 }

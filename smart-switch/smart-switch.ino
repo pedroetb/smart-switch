@@ -11,8 +11,8 @@
 
 void logSetupEnd() {
 
-	char msg[40] = "\n--- Setup completed in ";
-	char tmp[5];
+	char msg[39] = "\n--- Setup completed in ";
+	char tmp[6];
 	ltoa(millis(), tmp, 10);
 	strcat(msg, tmp);
 	strcat(msg, " ms ---\n\n");

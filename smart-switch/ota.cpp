@@ -16,6 +16,7 @@ void logOtaStart(const char *updateType) {
 
 void onOtaStart() {
 
+	switchOff();
 	mqttConnect();
 
 	char updateType[11];
@@ -30,7 +31,7 @@ void onOtaStart() {
 
 void logOtaProgress(const uint8_t percentage) {
 
-	char msg[27] = "OTA update progress: ";
+	char msg[26] = "OTA update progress: ";
 	char tmp[4];
 	itoa(percentage, tmp, 10);
 	strcat(msg, tmp);
@@ -56,7 +57,7 @@ void onOtaEnd() {
 
 void logOtaError(const char *errorType) {
 
-	char msg[34] = "OTA update failed: ";
+	char msg[33] = "OTA update failed: ";
 	strcat(msg, errorType);
 	strcat(msg, " error");
 	logMessage(msg);
@@ -64,7 +65,7 @@ void logOtaError(const char *errorType) {
 
 void onOtaError(ota_error_t error) {
 
-	char errorType[8];
+	char errorType[8] = "Unknown";
 	if (error == OTA_AUTH_ERROR) {
 		strcpy(errorType, "Auth");
 	} else if (error == OTA_BEGIN_ERROR) {
@@ -75,8 +76,6 @@ void onOtaError(ota_error_t error) {
 		strcpy(errorType, "Receive");
 	} else if (error == OTA_END_ERROR) {
 		strcpy(errorType, "End");
-	} else {
-		strcpy(errorType, "Unknown");
 	}
 	logOtaError(errorType);
 }
@@ -122,7 +121,7 @@ void otaSetup() {
 
 void logOtaConnect() {
 
-	char msg[91] = "OTA listening on ";
+	char msg[39] = "OTA listening on ";
 	char ipBuffer[16];
 	getWifiIp(ipBuffer);
 	strcat(msg, ipBuffer);

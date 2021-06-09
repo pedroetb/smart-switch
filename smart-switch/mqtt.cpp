@@ -80,16 +80,49 @@ void logMqttMessage(const char *message) {
 	}
 }
 
+void getMqttErrorMeaning(char *message, const int8_t state) {
+
+	strcat(message, " (");
+	if (state == -4) {
+		strcat(message, "connection timeout, keepalive exceeded");
+	} else if (state == -3) {
+		strcat(message, "connection lost");
+	} else if (state == -2) {
+		strcat(message, "connection failed");
+	} else if (state == -1) {
+		strcat(message, "connection closed normally");
+	} else if (state == 1) {
+		strcat(message, "bad protocol, MQTT version not supported");
+	} else if (state == 2) {
+		strcat(message, "client ID rejected");
+	} else if (state == 3) {
+		strcat(message, "server unavailable");
+	} else if (state == 4) {
+		strcat(message, "user credentials rejected");
+	} else if (state == 5) {
+		strcat(message, "client connection unauthorized");
+	} else {
+		strcat(message, "unknown");
+	}
+	strcat(message, ")");
+}
+
 void logMqttConnectionError() {
 
-	char msg[38] = "MQTT connection failed with error: ";
+	int8_t state = mqttClient.state();
+	char msg[81] = "MQTT connection failed with error: ";
 	char tmp[3];
-	itoa(mqttClient.state(), tmp, 10);
+	itoa(state, tmp, 10);
 	strcat(msg, tmp);
+	getMqttErrorMeaning(msg, state);
 	logSerialMessage(msg);
 }
 
 void mqttConnect() {
+
+	if (getMqttStatus()) {
+		return;
+	}
 
 	if (previouslyConnected) {
 		logSerialMessage("MQTT was disconnected, establishing new connection");
@@ -124,7 +157,8 @@ void getMqttCommandAndParam(char *cmd, char *param, const char *mqttMsg) {
 	char *separatorLocation = strchr(mqttMsg, ' ');
 
 	if (separatorLocation == '\0') {
-		strcpy(cmd, mqttMsg);
+		strncpy(cmd, mqttMsg, 28);
+		cmd[28] = '\0';
 		param[0] = '\0';
 	} else {
 		uint8_t separatorPosition = separatorLocation - mqttMsg;
@@ -132,13 +166,15 @@ void getMqttCommandAndParam(char *cmd, char *param, const char *mqttMsg) {
 		strncpy(cmd, mqttMsg, separatorPosition);
 		cmd[separatorPosition] = '\0';
 
-		strcpy(param, mqttMsg + separatorPosition + 1);
+		strncpy(param, mqttMsg + separatorPosition + 1, 27);
+		param[27] = '\0';
 	}
 }
 
 void getMqttRootResponse(char *res) {
 
-	char action[16] = "Actions:";
+	strcpy(res, "Actions: ");
+	char action[maxActionSize];
 	for (uint8_t i = 0; i < actionsLength; i++) {
 		strcpy(action, actions[i]);
 		if (strcmp(action, "/enable-mqtt") == 0 || strcmp(action, "/disable-mqtt") == 0) {
@@ -149,8 +185,10 @@ void getMqttRootResponse(char *res) {
 		}
 		strcat(res, "[");
 		strcat(res, action);
-		if (strcmp(action, "/set-timer") == 0) {
-			strcat(res, " <param>");
+		if (strcmp(action, "/on") == 0 || strcmp(action, "/off") == 0 || strcmp(action, "/toggle") == 0) {
+			strcat(res, " <channel?>");
+		} else if (strcmp(action, "/set-timer") == 0) {
+			strcat(res, " <timeout>");
 		}
 		strcat(res, "]");
 	}
@@ -158,15 +196,56 @@ void getMqttRootResponse(char *res) {
 
 void onMqttRootRequest() {
 
-	char msg[500];
+	char msg[300];
 	getMqttRootResponse(msg);
 
 	logMqttMessage(msg);
 }
 
+void logInvalidMqttParamReceived(const char *cmd) {
+
+	char msg[60] = "Received invalid parameter for '";
+	strcat(msg, cmd);
+	strcat(msg, "' MQTT action");
+	logMessage(msg);
+}
+
+void onMqttPowerRequest(const char *cmd, const char *param) {
+
+	uint8_t paramLength = strlen(param);
+	if (paramLength == 0) {
+		switchOn();
+	} else if (paramLength < 4) {
+		uint8_t channel = atoi(param);
+		if (!validateChannel(channel)) {
+			return;
+		}
+		channel--;
+		if (strcmp(cmd, "/on") == 0) {
+			switchOn(channel);
+		} else if (strcmp(cmd, "/off") == 0) {
+			switchOff(channel);
+		} else {
+			toggleRelay(channel);
+		}
+	} else {
+		logInvalidMqttParamReceived(cmd);
+	}
+}
+
+void onMqttSetTimerRequest(const char *cmd, const char *param) {
+
+	uint8_t paramLength = strlen(param);
+	if (paramLength > 0 && paramLength < 11) {
+		setTimerTimeout(param);
+	} else {
+		logInvalidMqttParamReceived(cmd);
+	}
+}
+
 void onMqttStatusRequest() {
 
-	char status[400];
+	char status[420];
 	getDeviceStatus(status);
 
 	logMqttMessage(status);
@@ -174,26 +253,22 @@ void onMqttStatusRequest() {
 
 void onMqttInvalidRequest(const char *cmd) {
 
-	char msg[150] = "Invalid MQTT command: ";
+	char msg[51] = "Invalid MQTT command: ";
 	strcat(msg, cmd);
 
-	logMqttMessage(msg);
+	logMessage(msg);
 }
 
 void handleMqttRequest(const char *mqttMsg) {
 
-	char cmd[17];
-	char param[11];
+	char cmd[29];
+	char param[28];
 	getMqttCommandAndParam(cmd, param, mqttMsg);
 
 	if (strcmp(cmd, "/") == 0) {
 		onMqttRootRequest();
-	} else if (strcmp(cmd, "/on") == 0) {
-		switchOn();
-	} else if (strcmp(cmd, "/off") == 0) {
-		switchOff();
-	} else if (strcmp(cmd, "/toggle") == 0) {
-		toggleRelay();
+	} else if (strcmp(cmd, "/on") == 0 || strcmp(cmd, "/off") == 0 || strcmp(cmd, "/toggle") == 0) {
+		onMqttPowerRequest(cmd, param);
 	} else if (strcmp(cmd, "/status") == 0) {
 		onMqttStatusRequest();
 	} else if (strcmp(cmd, "/enable-noise") == 0) {
@@ -205,7 +280,7 @@ void handleMqttRequest(const char *mqttMsg) {
 	} else if (strcmp(cmd, "/disable-timer") == 0) {
 		disableTimer();
 	} else if (strcmp(cmd, "/set-timer") == 0) {
-		setTimerTimeout(param);
+		onMqttSetTimerRequest(cmd, param);
 	} else if (strcmp(cmd, "/enable-http") == 0) {
 		enableHttp();
 	} else if (strcmp(cmd, "/disable-http") == 0) {
@@ -231,7 +306,7 @@ void getMqttMessage(char *mqttMsg, uint8_t *payload, uint8_t length) {
 
 void logMqttReceivedMessage(const char *mqttMsg) {
 
-	char msg[143] = "MQTT received: ";
+	char msg[44] = "MQTT received: ";
 	strcat(msg, mqttMsg);
 
 	logMessage(msg);
@@ -258,9 +333,7 @@ void evalMqttStatus(uint32_t currEvalTime) {
 	}
 	lastMqttEvalTime = currEvalTime;
 
-	if (!getMqttStatus()) {
-		mqttConnect();
-	}
+	mqttConnect();
 	mqttClient.loop();
 }
 
@@ -271,8 +344,8 @@ void enableMqtt() {
 	}
 
 	mqttEnabled = true;
-	mqttConnect();
 	logMessage("MQTT communication enabled");
+	mqttConnect();
 }
 
 void disableMqtt() {

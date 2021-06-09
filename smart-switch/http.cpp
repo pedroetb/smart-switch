@@ -7,17 +7,17 @@ bool httpEnabled = true;
 
 void logHttpRequestUri() {
 
-	char msg[52] = "HTTP received uri: ";
-	strcat(msg, server.uri().c_str());
+	char msg[httpMaxItemLength + 20] = "HTTP received uri: ";
+	strncat(msg, server.uri().c_str(), httpMaxItemLength);
 	logMessage(msg);
 }
 
 void logHttpRequestArg(const uint8_t &i) {
 
-	char msg[52] = "HTTP received arg: ";
-	strcat(msg, server.argName(i).c_str());
+	char msg[2 * httpMaxItemLength + 21] = "HTTP received arg: ";
+	strncat(msg, server.argName(i).c_str(), httpMaxItemLength);
 	strcat(msg, "=");
-	strcat(msg, server.arg(i).c_str());
+	strncat(msg, server.arg(i).c_str(), httpMaxItemLength);
 	logMessage(msg);
 }
 
@@ -30,11 +30,17 @@ void printHttpRequest() {
 	}
 }
 
+void getHttpParamValue(char *paramValue, const char *paramName) {
+
+	strncpy(paramValue, server.arg(paramName).c_str(), httpMaxItemLength);
+	paramValue[httpMaxItemLength - 1] = '\0';
+}
+
 bool checkFormatIsHtml() {
 
 	if (server.hasArg("format")) {
-		char format[5];
-		strcpy(format, server.arg("format").c_str());
+		char format[httpMaxItemLength];
+		getHttpParamValue(format, "format");
 		return strcmp(format, "html") == 0;
 	}
 	return false;
@@ -97,25 +103,90 @@ void sendActionSuccessResponse(const char *successMessage) {
 	sendActionResponse(200, successMessage);
 }
 
+int8_t getChannelParam() {
+
+	if (!server.hasArg("channel")) {
+		return 0;
+	}
+
+	char channelBuffer[httpMaxItemLength];
+	getHttpParamValue(channelBuffer, "channel");
+
+	uint8_t channelLength = strlen(channelBuffer);
+	if (channelLength == 0) {
+		return 0;
+	} else if (channelLength > 3) {
+		return -1;
+	}
+
+	uint8_t channelNumber = atoi(channelBuffer);
+
+	if (!validateChannel(channelNumber)) {
+		return -1;
+	}
+
+	return channelNumber;
+}
+
+void sendChannelPowerChanged(uint8_t channelNumber, const char *msgEnding) {
+
+	char msg[33] = "Power of channel #";
+	char channelLabel[4];
+	itoa(channelNumber, channelLabel, 10);
+	strcat(msg, channelLabel);
+	strcat(msg, msgEnding);
+
+	sendActionSuccessResponse(msg);
+}
+
+void sendPowerChangeError() {
+
+	logMessage("Received invalid channel parameter for set power HTTP action");
+	sendActionResponse(400, "Invalid argument: 'channel'");
+}
+
 void handleOn() {
 
 	printHttpRequest();
-	switchOn();
-	sendActionSuccessResponse("Relay set to on");
+
+	int8_t channel = getChannelParam();
+	if (channel > 0) {
+		switchOn(channel - 1);
+		sendChannelPowerChanged(channel, " set to on");
+	} else if (channel == 0) {
+		switchOn();
+		sendActionSuccessResponse("All channels power set to on");
+	} else {
+		sendPowerChangeError();
+	}
 }
 
 void handleOff() {
 
-	printHttpRequest();
-	switchOff();
-	sendActionSuccessResponse("Relay set to off");
+	int8_t channel = getChannelParam();
+	if (channel > 0) {
+		switchOff(channel - 1);
+		sendChannelPowerChanged(channel, " set to off");
+	} else if (channel == 0) {
+		switchOff();
+		sendActionSuccessResponse("All channels power set to off");
+	} else {
+		sendPowerChangeError();
+	}
 }
 
 void handleToggle() {
 
-	printHttpRequest();
-	toggleRelay();
-	sendActionSuccessResponse("Relay toggled");
+	int8_t channel = getChannelParam();
+	if (channel > 0) {
+		toggleRelay(channel - 1);
+		sendChannelPowerChanged(channel, " toggled");
+	} else if (channel == 0) {
+		toggleRelay();
+		sendActionSuccessResponse("All channels power toggled");
+	} else {
+		sendPowerChangeError();
+	}
 }
 
 void getHttpStatusResponse(char *htmlResponse, const char *deviceStatus) {
@@ -130,7 +201,7 @@ void getHttpStatusResponse(char *htmlResponse, const char *deviceStatus) {
 void handleStatus() {
 
 	printHttpRequest();
-	char deviceStatus[400];
+	char deviceStatus[420];
 	getDeviceStatus(deviceStatus);
 	if (checkFormatIsHtml()) {
 		char htmlResponse[656];
@@ -169,10 +240,12 @@ void handleDisableTimer() {
 	sendActionSuccessResponse("Auto-off timer disabled");
 }
 
-void sendTimeoutSet(const char *timeout) {
+void sendTimeoutSet() {
 
 	char msg[44] = "Auto-off timer timeout set to ";
-	strcat(msg, timeout);
+	char tmp[11];
+	getTimerTimeout(tmp);
+	strcat(msg, tmp);
 	strcat(msg, " ms");
 
 	sendActionSuccessResponse(msg);
@@ -181,14 +254,25 @@ void sendTimeoutSet(const char *timeout) {
 void handleSetTimer() {
 
 	printHttpRequest();
-	if (server.hasArg("timeout")) {
-		char timeout[11];
-		strcpy(timeout, server.arg("timeout").c_str());
-		setTimerTimeout(timeout);
-		sendTimeoutSet(timeout);
-	} else {
+
+	if (!server.hasArg("timeout")) {
+		logMessage("Missing timeout parameter for '/set-timer' HTTP action");
 		sendActionResponse(400, "Missing argument: 'timeout'");
+		return;
 	}
+
+	char timeout[httpMaxItemLength];
+	getHttpParamValue(timeout, "timeout");
+
+	uint8_t timeoutLength = strlen(timeout);
+	if (timeoutLength == 0 || timeoutLength > 10) {
+		logMessage("Received invalid parameter for '/set-timer' HTTP action");
+		sendActionResponse(400, "Invalid argument: 'timeout'");
+		return;
+	}
+
+	setTimerTimeout(timeout);
+	sendTimeoutSet();
 }
 
 void handleEnableMqtt() {
@@ -232,13 +316,38 @@ void handleNotFound() {
 	sendActionResponse(404, "Not found");
 }
 
+void getHttpRootSetPowerSection(char *htmlResponse, const char *action) {
+
+	strcat(htmlResponse, " <a href=\"");
+	strcat(htmlResponse, action);
+	strcat(htmlResponse, "?format=html\">");
+	strcat(htmlResponse, action);
+	strcat(htmlResponse, "</a>");
+
+	char channelValue[4];
+	char channelLabel[5];
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		itoa(i + 1, channelValue, 10);
+		strcpy(channelLabel, "#");
+		strcat(channelLabel, channelValue);
+
+		strcat(htmlResponse, " <a href=\"");
+		strcat(htmlResponse, action);
+		strcat(htmlResponse, "?format=html&channel=");
+		strcat(htmlResponse, channelValue);
+		strcat(htmlResponse, "\">[ ");
+		strcat(htmlResponse, channelLabel);
+		strcat(htmlResponse, " ]</a>");
+	}
+}
+
 void getHttpRootSetTimerSection(char *htmlResponse, const char *action) {
 
-	constexpr uint8_t timeoutsLength = 10;
-	constexpr char *timeoutLabels[timeoutsLength] = {
+	const uint8_t timeoutsLength = 10;
+	const char *timeoutLabels[timeoutsLength] = {
 		"1m", "5m", "10m", "30m", "1h", "6h", "12h", "1d", "1w", "1mo"
 	};
-	constexpr char *timeoutValues[timeoutsLength] = {
+	const char *timeoutValues[timeoutsLength] = {
 		"60000", "300000", "600000", "1800000", "3600000", "21600000", "43200000", "86400000", "604800000", "2628000000"
 	};
 
@@ -294,7 +403,9 @@ void getHttpRootResponse(char *htmlResponse) {
 			continue;
 		}
 		strcat(htmlResponse, "<li>");
-		if (strcmp(action, "/set-timer") == 0) {
+		if (strcmp(action, "/on") == 0 || strcmp(action, "/off") == 0 || strcmp(action, "/toggle") == 0) {
+			getHttpRootSetPowerSection(htmlResponse, action);
+		} else if (strcmp(action, "/set-timer") == 0) {
 			getHttpRootSetTimerSection(htmlResponse, action);
 		} else if (strcmp(action, "/status") == 0) {
 			getHttpRootStatusSection(htmlResponse, action);
@@ -311,7 +422,7 @@ void getHttpRootResponse(char *htmlResponse) {
 void handleRoot() {
 
 	printHttpRequest();
-	char htmlResponse[1600];
+	char htmlResponse[2000];
 	getHttpRootResponse(htmlResponse);
 	sendResponse(200, "text/html", htmlResponse);
 }
@@ -397,8 +508,8 @@ void enableHttp() {
 	}
 
 	httpEnabled = true;
-	httpConnect();
 	logMessage("HTTP communication enabled");
+	httpConnect();
 }
 
 void disableHttp() {
@@ -408,8 +519,8 @@ void disableHttp() {
 	}
 
 	httpEnabled = false;
-	httpDisconnect();
 	logMessage("HTTP communication disabled");
+	httpDisconnect();
 }
 
 bool getHttpEnabled() {

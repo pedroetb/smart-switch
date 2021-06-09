@@ -6,7 +6,8 @@
 
 void measureSetup();
 void evalMeasureStatus(uint32_t currEvalTime);
-bool getMeasurePowerStatus();
-uint8_t getMeasureFrequency();
+bool getPowerStatus(uint8_t index);
+bool getPowerStatus();
+uint8_t getNetFrequency(uint8_t index);
 
 #endif

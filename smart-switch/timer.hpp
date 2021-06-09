@@ -14,6 +14,7 @@ uint32_t getTimerElapsedTime();
 void setTimerTimeout(uint32_t timeout);
 void setTimerTimeout(const char *timeout);
 uint32_t getTimerTimeout();
+void getTimerTimeout(char *timeoutBuffer);
 bool getTimerEnabled();
 
 #endif

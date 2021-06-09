@@ -5,11 +5,16 @@ uint32_t timerStartTime = 0;
 bool timerEnabled = true;
 bool timerRunning = false;
 
+void getTimerTimeout(char *timeoutBuffer) {
+
+	snprintf(timeoutBuffer, 11, "%lu", timerTimeout);
+}
+
 void logTimerSetupEnd() {
 
 	char msg[36] = "Auto-off timer set to ";
 	char tmp[11];
-	itoa(timerTimeout, tmp, 10);
+	getTimerTimeout(tmp);
 	strcat(msg, tmp);
 	strcat(msg, " ms");
 
@@ -27,9 +32,9 @@ void timerSetup() {
 
 void logTimerStart() {
 
-	char msg[32] = "Auto-off timer will trigger in ";
+	char msg[45] = "Auto-off timer will trigger in ";
 	char tmp[11];
-	itoa(timerTimeout, tmp, 10);
+	getTimerTimeout(tmp);
 	strcat(msg, tmp);
 	strcat(msg, " ms");
 
@@ -92,7 +97,7 @@ void evalTimerStatus(uint32_t currEvalTime) {
 		return;
 	}
 
-	if (!getMeasurePowerStatus()) {
+	if (!getPowerStatus()) {
 		if (timerRunning) {
 			clearTimer();
 			logMessage("Auto-off timer cleared");
@@ -111,11 +116,11 @@ void evalTimerStatus(uint32_t currEvalTime) {
 	triggerTimer();
 }
 
-void logTimerTimeoutSet(uint32_t timeout) {
+void logTimerTimeoutSet() {
 
 	char msg[45] = "Auto-off timer timeout set to ";
 	char tmp[11];
-	itoa(timeout, tmp, 10);
+	getTimerTimeout(tmp);
 	strcat(msg, tmp);
 	strcat(msg, " ms");
 
@@ -125,13 +130,17 @@ void logTimerTimeoutSet(uint32_t timeout) {
 void setTimerTimeout(uint32_t timeout) {
 
 	timerTimeout = timeout;
-	logTimerTimeoutSet(timeout);
+	logTimerTimeoutSet();
 }
 
 void setTimerTimeout(const char *timeout) {
 
 	uint32_t timeoutNum = strtoul(timeout, 0, 10);
-	setTimerTimeout(timeoutNum);
+	if (timeoutNum != 0) {
+		setTimerTimeout(timeoutNum);
+	} else {
+		logMessage("Tried to set invalid timeout value");
+	}
 }
 
 uint32_t getTimerTimeout() {

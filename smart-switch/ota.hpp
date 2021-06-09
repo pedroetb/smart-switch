@@ -4,6 +4,7 @@
 #include <ArduinoOTA.h>
 #include "config.hpp"
 #include "common.hpp"
+#include "relay.hpp"
 #include "wifi.hpp"
 #include "mqtt.hpp"
 
