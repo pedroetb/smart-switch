@@ -173,33 +173,32 @@ void getMqttCommandAndParam(char *cmd, char *param, const char *mqttMsg) {
 
 void getMqttRootResponse(char *res) {
 
-	strcpy(res, "Actions: ");
+	strcpy(res, "Actions:");
 	char action[maxActionSize];
 	for (uint8_t i = 0; i < actionsLength; i++) {
 		strcpy(action, actions[i]);
 		if (strcmp(action, "/enable-mqtt") == 0 || strcmp(action, "/disable-mqtt") == 0) {
 			continue;
 		}
-		if (i > 0) {
-			strcat(res, ",");
-		}
-		strcat(res, "[");
+		strcat(res, "\n\t");
 		strcat(res, action);
-		if (strcmp(action, "/on") == 0 || strcmp(action, "/off") == 0 || strcmp(action, "/toggle") == 0) {
-			strcat(res, " <channel?>");
+		if (strcmp(action, "/on") == 0 || strcmp(action, "/off") == 0 || strcmp(action, "/toggle") == 0 ||
+			strcmp(action, "/enable-noise") == 0 || strcmp(action, "/disable-noise") == 0) {
+
+			strcat(res, " [<channel>]");
 		} else if (strcmp(action, "/set-timer") == 0) {
 			strcat(res, " <timeout>");
 		}
-		strcat(res, "]");
 	}
 }
 
 void onMqttRootRequest() {
 
-	char msg[300];
-	getMqttRootResponse(msg);
-
-	logMqttMessage(msg);
+	static char mqttResponse[300];
+	if (strlen(mqttResponse) == 0) {
+		getMqttRootResponse(mqttResponse);
+	}
+	logMqttMessage(mqttResponse);
 }
 
 void logInvalidMqttParamReceived(const char *cmd) {
@@ -210,11 +209,21 @@ void logInvalidMqttParamReceived(const char *cmd) {
 	logMessage(msg);
 }
 
-void onMqttPowerRequest(const char *cmd, const char *param) {
+void onMqttActionByChannelRequest(const char *cmd, const char *param) {
 
 	uint8_t paramLength = strlen(param);
 	if (paramLength == 0) {
-		switchOn();
+		if (strcmp(cmd, "/on") == 0) {
+			switchOn();
+		} else if (strcmp(cmd, "/off") == 0) {
+			switchOff();
+		} else if (strcmp(cmd, "/toggle") == 0) {
+			toggleRelay();
+		} else if (strcmp(cmd, "/enable-noise") == 0) {
+			enableNoise();
+		} else if (strcmp(cmd, "/disable-noise") == 0) {
+			disableNoise();
+		}
 	} else if (paramLength < 4) {
 		uint8_t channel = atoi(param);
 		if (!validateChannel(channel)) {
@@ -225,8 +234,12 @@ void onMqttPowerRequest(const char *cmd, const char *param) {
 			switchOn(channel);
 		} else if (strcmp(cmd, "/off") == 0) {
 			switchOff(channel);
-		} else {
+		} else if (strcmp(cmd, "/toggle") == 0) {
 			toggleRelay(channel);
+		} else if (strcmp(cmd, "/enable-noise") == 0) {
+			enableNoise(channel);
+		} else if (strcmp(cmd, "/disable-noise") == 0) {
+			disableNoise(channel);
 		}
 	} else {
 		logInvalidMqttParamReceived(cmd);
@@ -245,10 +258,11 @@ void onMqttSetTimerRequest(const char *cmd, const char *param) {
 
 void onMqttStatusRequest() {
 
-	char status[420];
+	char status[deviceStatusMaxSize];
 	getDeviceStatus(status);
-
-	logMqttMessage(status);
+	char msg[deviceStatusMaxSize + 9] = "Status:\n";
+	strcat(msg, status);
+	logMqttMessage(msg);
 }
 
 void onMqttInvalidRequest(const char *cmd) {
@@ -267,14 +281,12 @@ void handleMqttRequest(const char *mqttMsg) {
 
 	if (strcmp(cmd, "/") == 0) {
 		onMqttRootRequest();
-	} else if (strcmp(cmd, "/on") == 0 || strcmp(cmd, "/off") == 0 || strcmp(cmd, "/toggle") == 0) {
-		onMqttPowerRequest(cmd, param);
+	} else if (strcmp(cmd, "/on") == 0 || strcmp(cmd, "/off") == 0 || strcmp(cmd, "/toggle") == 0 ||
+		strcmp(cmd, "/enable-noise") == 0 || strcmp(cmd, "/disable-noise") == 0) {
+
+		onMqttActionByChannelRequest(cmd, param);
 	} else if (strcmp(cmd, "/status") == 0) {
 		onMqttStatusRequest();
-	} else if (strcmp(cmd, "/enable-noise") == 0) {
-		enableNoise();
-	} else if (strcmp(cmd, "/disable-noise") == 0) {
-		disableNoise();
 	} else if (strcmp(cmd, "/enable-timer") == 0) {
 		enableTimer();
 	} else if (strcmp(cmd, "/disable-timer") == 0) {

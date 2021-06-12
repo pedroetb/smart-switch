@@ -1,26 +1,5 @@
 #include "common.hpp"
 
-constexpr uint8_t arrayValueLength = 4 * channelsAvailable + 3;
-constexpr char deviceStatusTemplate[430] = "{\n"
-	"\t\"powerStatus\": %s,\n"
-	"\t\"netFrequency\": %s,\n"
-	"\t\"relayStatus\": %s,\n"
-	"\t\"timerEnabled\": %u,\n"
-	"\t\"timerElapsedTime\": %u,\n"
-	"\t\"timerTimeout\": %u,\n"
-	"\t\"noiseEnabled\": %u,\n"
-	"\t\"noiseValue\": %u,\n"
-	"\t\"wifiStatus\": %u,\n"
-	"\t\"mac\": \"%s\",\n"
-	"\t\"ssid\": \"%s\",\n"
-	"\t\"ip\": \"%s\",\n"
-	"\t\"rssi\": %i,\n"
-	"\t\"httpEnabled\": %u,\n"
-	"\t\"mqttEnabled\": %u,\n"
-	"\t\"mqttStatus\": %u,\n"
-	"\t\"otaEnabled\": %u\n"
-	"}";
-
 void commonSetup() {
 
 	if (serialLogEnabled) {
@@ -58,6 +37,12 @@ void getArrayPropertyValue(char *buffer, const char *propName) {
 			} else {
 				strcat(buffer, "0");
 			}
+		} else if (strcmp(propName, "noiseEnabled") == 0) {
+			if (getNoiseEnabled(i)) {
+				strcat(buffer, "1");
+			} else {
+				strcat(buffer, "0");
+			}
 		}
 	}
 	strcat(buffer, " ]");
@@ -72,23 +57,25 @@ void getDeviceStatus(char *deviceStatusBuffer) {
 	char ipBuffer[16];
 	getWifiIp(ipBuffer);
 
-	char powerStatusBuffer[arrayValueLength];
+	char powerStatusBuffer[arrayValueSize];
 	getArrayPropertyValue(powerStatusBuffer, "powerStatus");
-	char netFrequencyBuffer[arrayValueLength];
+	char netFrequencyBuffer[arrayValueSize];
 	getArrayPropertyValue(netFrequencyBuffer, "netFrequency");
-	char relayStatusBuffer[arrayValueLength];
+	char relayStatusBuffer[arrayValueSize];
 	getArrayPropertyValue(relayStatusBuffer, "relayStatus");
+	char noiseEnabledBuffer[arrayValueSize];
+	getArrayPropertyValue(noiseEnabledBuffer, "noiseEnabled");
 
-	snprintf(deviceStatusBuffer, 420, deviceStatusTemplate,
+	snprintf(deviceStatusBuffer, deviceStatusMaxSize, deviceStatusTemplate,
 		powerStatusBuffer, netFrequencyBuffer, relayStatusBuffer,
-		getTimerEnabled(), getTimerElapsedTime(), getTimerTimeout(), getNoiseEnabled(), getNoiseValue(),
+		getTimerEnabled(), getTimerElapsedTime(), getTimerTimeout(), noiseEnabledBuffer, getNoiseValue(),
 		getWifiStatus(), macBuffer, ssidBuffer, ipBuffer, getWifiRssi(),
 		getHttpEnabled(), getMqttEnabled(), getMqttStatus(), getOtaEnabled());
 }
 
 bool validateChannel(const uint8_t channel) {
 
-	const bool validChannel = channel > 0 && channel <= channelsAvailable;
+	bool validChannel = channel > 0 && channel <= channelsAvailable;
 	if (!validChannel) {
 		logMessage("Received invalid channel to operate");
 	}

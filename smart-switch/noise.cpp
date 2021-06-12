@@ -2,7 +2,7 @@
 
 uint32_t lastNoiseTime = 0;
 uint32_t lastAcceptedNoiseTime = 0;
-bool noiseEnabled = true;
+bool noiseEnabled[channelsAvailable];
 bool lastNoiseValue = 0;
 bool noiseValue = 0;
 
@@ -12,12 +12,44 @@ void noiseSetup() {
 
 	pinMode(noisePin, INPUT);
 
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		noiseEnabled[i] = true;
+	}
+
 	logSerialMessage("Listening double-clap sound patterns");
+}
+
+bool getNoiseEnabled(uint8_t index) {
+
+	return noiseEnabled[index];
+}
+
+bool getNoiseEnabled() {
+
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		if (getNoiseEnabled(i)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void onNoiseTrigger(uint32_t currEvalTime) {
+
+	logMessage("Noise (double clap) detected");
+
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		if (noiseEnabled[i]) {
+			toggleRelay(i);
+		}
+	}
+
+	lastAcceptedNoiseTime = currEvalTime;
 }
 
 void evalNoiseStatus(uint32_t currEvalTime) {
 
-	if (!noiseEnabled) {
+	if (!getNoiseEnabled()) {
 		return;
 	}
 
@@ -36,9 +68,7 @@ void evalNoiseStatus(uint32_t currEvalTime) {
 		bool lastNoisePatternFinished = currEvalTime - noisePatternDebounceTimeout > lastAcceptedNoiseTime;
 
 		if (noiseIsDiscontinuous && noiseIsNotOverlapped && lastNoisePatternFinished) {
-			logMessage("Noise (double clap) detected");
-			toggleRelay();
-			lastAcceptedNoiseTime = currEvalTime;
+			onNoiseTrigger(currEvalTime);
 		}
 	}
 
@@ -46,29 +76,48 @@ void evalNoiseStatus(uint32_t currEvalTime) {
 	lastNoiseValue = noiseValue;
 }
 
-void enableNoise() {
+void enableNoise(uint8_t index) {
 
-	if (noiseEnabled) {
+	if (noiseEnabled[index]) {
 		return;
 	}
 
-	noiseEnabled = true;
-	logMessage("Noise trigger enabled");
+	noiseEnabled[index] = true;
+
+	char msg[38] = "Noise trigger enabled in channel #";
+	char tmp[4];
+	itoa(index + 1, tmp, 10);
+	strcat(msg, tmp);
+	logMessage(msg);
+}
+
+void enableNoise() {
+
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		enableNoise(i);
+	}
+}
+
+void disableNoise(uint8_t index) {
+
+	if (!noiseEnabled[index]) {
+		return;
+	}
+
+	noiseEnabled[index] = false;
+
+	char msg[39] = "Noise trigger disabled in channel #";
+	char tmp[4];
+	itoa(index + 1, tmp, 10);
+	strcat(msg, tmp);
+	logMessage(msg);
 }
 
 void disableNoise() {
 
-	if (!noiseEnabled) {
-		return;
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		disableNoise(i);
 	}
-
-	noiseEnabled = false;
-	logMessage("Noise trigger disabled");
-}
-
-bool getNoiseEnabled() {
-
-	return noiseEnabled;
 }
 
 bool getNoiseValue() {

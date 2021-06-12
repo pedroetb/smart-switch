@@ -7,9 +7,11 @@
 
 void noiseSetup();
 void evalNoiseStatus(uint32_t currEvalTime);
+void enableNoise(uint8_t index);
 void enableNoise();
+void disableNoise(uint8_t index);
 void disableNoise();
-bool getNoiseEnabled();
+bool getNoiseEnabled(uint8_t index);
 bool getNoiseValue();
 
 #endif

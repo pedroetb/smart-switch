@@ -12,17 +12,6 @@ constexpr char rootName[17] = "pedroetb"; // max. length 16
 constexpr char commonName[17] = "smart-switch"; // max. length 16
 constexpr char uniqueId[4] = "001"; // max. length 3
 constexpr uint8_t channelsAvailable = 2;
-constexpr uint8_t actionsLength = 17;
-constexpr uint8_t maxActionSize = 15; // max. length 14
-constexpr char actions[actionsLength][maxActionSize] = {
-	"/", "/status", "/reset",
-	"/on", "/off", "/toggle",
-	"/enable-noise", "/disable-noise",
-	"/enable-timer", "/disable-timer", "/set-timer",
-	"/enable-http", "/disable-http",
-	"/enable-mqtt", "/disable-mqtt",
-	"/enable-ota", "/disable-ota",
-};
 
 // relay
 constexpr uint8_t relayPin[channelsAvailable] = {
@@ -58,7 +47,6 @@ constexpr uint16_t wifiEvalTimeout = 30000;
 
 // http
 constexpr uint16_t httpServerPort = 80;
-constexpr uint8_t httpMaxItemLength = 16;
 constexpr uint8_t httpRedirectTimeout = 5;
 constexpr uint8_t httpRefreshInterval = 30;
 constexpr uint16_t httpEvalTimeout = 1000;

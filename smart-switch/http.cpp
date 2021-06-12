@@ -139,9 +139,9 @@ void sendChannelPowerChanged(uint8_t channelNumber, const char *msgEnding) {
 	sendActionSuccessResponse(msg);
 }
 
-void sendPowerChangeError() {
+void sendActionByChannelError() {
 
-	logMessage("Received invalid channel parameter for set power HTTP action");
+	logMessage("Received invalid channel parameter for HTTP action");
 	sendActionResponse(400, "Invalid argument: 'channel'");
 }
 
@@ -157,11 +157,13 @@ void handleOn() {
 		switchOn();
 		sendActionSuccessResponse("All channels power set to on");
 	} else {
-		sendPowerChangeError();
+		sendActionByChannelError();
 	}
 }
 
 void handleOff() {
+
+	printHttpRequest();
 
 	int8_t channel = getChannelParam();
 	if (channel > 0) {
@@ -171,11 +173,13 @@ void handleOff() {
 		switchOff();
 		sendActionSuccessResponse("All channels power set to off");
 	} else {
-		sendPowerChangeError();
+		sendActionByChannelError();
 	}
 }
 
 void handleToggle() {
+
+	printHttpRequest();
 
 	int8_t channel = getChannelParam();
 	if (channel > 0) {
@@ -185,7 +189,7 @@ void handleToggle() {
 		toggleRelay();
 		sendActionSuccessResponse("All channels power toggled");
 	} else {
-		sendPowerChangeError();
+		sendActionByChannelError();
 	}
 }
 
@@ -201,10 +205,10 @@ void getHttpStatusResponse(char *htmlResponse, const char *deviceStatus) {
 void handleStatus() {
 
 	printHttpRequest();
-	char deviceStatus[420];
+	char deviceStatus[deviceStatusMaxSize];
 	getDeviceStatus(deviceStatus);
 	if (checkFormatIsHtml()) {
-		char htmlResponse[656];
+		char htmlResponse[deviceStatusMaxSize + 200];
 		getHttpStatusResponse(htmlResponse, deviceStatus);
 		sendResponse(200, "text/html", htmlResponse);
 	} else {
@@ -212,18 +216,48 @@ void handleStatus() {
 	}
 }
 
+void sendChannelEnabledFeatureChanged(uint8_t channelNumber, const char *msgStart) {
+
+	char msg[37];
+	strcpy(msg, msgStart);
+	strcat(msg, " in channel #");
+	char channelLabel[4];
+	itoa(channelNumber, channelLabel, 10);
+	strcat(msg, channelLabel);
+
+	sendActionSuccessResponse(msg);
+}
+
 void handleEnableNoise() {
 
 	printHttpRequest();
-	enableNoise();
-	sendActionSuccessResponse("Noise trigger enabled");
+
+	int8_t channel = getChannelParam();
+	if (channel > 0) {
+		enableNoise(channel - 1);
+		sendChannelEnabledFeatureChanged(channel, "Noise trigger enabled");
+	} else if (channel == 0) {
+		enableNoise();
+		sendActionSuccessResponse("Noise trigger enabled in all channels");
+	} else {
+		sendActionByChannelError();
+	}
 }
 
 void handleDisableNoise() {
 
 	printHttpRequest();
-	disableNoise();
-	sendActionSuccessResponse("Noise trigger disabled");
+
+	int8_t channel = getChannelParam();
+	if (channel > 0) {
+		disableNoise(channel - 1);
+		sendChannelEnabledFeatureChanged(channel, "Noise trigger disabled");
+	} else if (channel == 0) {
+		disableNoise();
+		sendActionSuccessResponse("Noise trigger disabled in all channels");
+	} else {
+		sendActionByChannelError();
+	}
 }
 
 void handleEnableTimer() {
@@ -316,7 +350,7 @@ void handleNotFound() {
 	sendActionResponse(404, "Not found");
 }
 
-void getHttpRootSetPowerSection(char *htmlResponse, const char *action) {
+void getHttpRootSetByChannelSection(char *htmlResponse, const char *action) {
 
 	strcat(htmlResponse, " <a href=\"");
 	strcat(htmlResponse, action);
@@ -343,21 +377,13 @@ void getHttpRootSetPowerSection(char *htmlResponse, const char *action) {
 
 void getHttpRootSetTimerSection(char *htmlResponse, const char *action) {
 
-	const uint8_t timeoutsLength = 10;
-	const char *timeoutLabels[timeoutsLength] = {
-		"1m", "5m", "10m", "30m", "1h", "6h", "12h", "1d", "1w", "1mo"
-	};
-	const char *timeoutValues[timeoutsLength] = {
-		"60000", "300000", "600000", "1800000", "3600000", "21600000", "43200000", "86400000", "604800000", "2628000000"
-	};
-
 	strcat(htmlResponse, action);
 
-	char timeoutValue[11];
-	char timeoutLabel[4];
-	for (uint8_t i = 0; i < timeoutsLength; i++) {
-		strcpy(timeoutLabel, timeoutLabels[i]);
-		strcpy(timeoutValue, timeoutValues[i]);
+	char timeoutValue[httpTimeoutValueMaxSize];
+	char timeoutLabel[httpTimeoutLabelMaxSize];
+	for (uint8_t i = 0; i < httpTimeoutsLength; i++) {
+		strcpy(timeoutLabel, httpTimeoutLabels[i]);
+		strcpy(timeoutValue, httpTimeoutValues[i]);
 
 		strcat(htmlResponse, " <a href=\"");
 		strcat(htmlResponse, action);
@@ -396,15 +422,17 @@ void getHttpRootResponse(char *htmlResponse) {
 	strcat(htmlResponse, httpTitle);
 	strcat(htmlResponse, "</h1><ul>");
 
-	char action[16];
+	char action[maxActionSize];
 	for (uint8_t i = 0; i < actionsLength; i++) {
 		strcpy(action, actions[i]);
 		if (strcmp(action, "/enable-http") == 0 || strcmp(action, "/disable-http") == 0) {
 			continue;
 		}
 		strcat(htmlResponse, "<li>");
-		if (strcmp(action, "/on") == 0 || strcmp(action, "/off") == 0 || strcmp(action, "/toggle") == 0) {
-			getHttpRootSetPowerSection(htmlResponse, action);
+		if (strcmp(action, "/on") == 0 || strcmp(action, "/off") == 0 || strcmp(action, "/toggle") == 0 ||
+			strcmp(action, "/enable-noise") == 0 || strcmp(action, "/disable-noise") == 0) {
+
+			getHttpRootSetByChannelSection(htmlResponse, action);
 		} else if (strcmp(action, "/set-timer") == 0) {
 			getHttpRootSetTimerSection(htmlResponse, action);
 		} else if (strcmp(action, "/status") == 0) {
@@ -422,8 +450,10 @@ void getHttpRootResponse(char *htmlResponse) {
 void handleRoot() {
 
 	printHttpRequest();
-	char htmlResponse[2000];
-	getHttpRootResponse(htmlResponse);
+	static char htmlResponse[2500];
+	if (strlen(htmlResponse) == 0) {
+		getHttpRootResponse(htmlResponse);
+	}
 	sendResponse(200, "text/html", htmlResponse);
 }
 
