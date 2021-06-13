@@ -263,15 +263,33 @@ void handleDisableNoise() {
 void handleEnableTimer() {
 
 	printHttpRequest();
-	enableTimer();
-	sendActionSuccessResponse("Auto-off timer enabled");
+
+	int8_t channel = getChannelParam();
+	if (channel > 0) {
+		enableTimer(channel - 1);
+		sendChannelEnabledFeatureChanged(channel, "Auto-off timer enabled");
+	} else if (channel == 0) {
+		enableTimer();
+		sendActionSuccessResponse("Auto-off timer enabled in all channels");
+	} else {
+		sendActionByChannelError();
+	}
 }
 
 void handleDisableTimer() {
 
 	printHttpRequest();
-	disableTimer();
-	sendActionSuccessResponse("Auto-off timer disabled");
+
+	int8_t channel = getChannelParam();
+	if (channel > 0) {
+		disableTimer(channel - 1);
+		sendChannelEnabledFeatureChanged(channel, "Auto-off timer disabled");
+	} else if (channel == 0) {
+		disableTimer();
+		sendActionSuccessResponse("Auto-off timer disabled in all channels");
+	} else {
+		sendActionByChannelError();
+	}
 }
 
 void sendTimeoutSet() {
@@ -429,9 +447,7 @@ void getHttpRootResponse(char *htmlResponse) {
 			continue;
 		}
 		strcat(htmlResponse, "<li>");
-		if (strcmp(action, "/on") == 0 || strcmp(action, "/off") == 0 || strcmp(action, "/toggle") == 0 ||
-			strcmp(action, "/enable-noise") == 0 || strcmp(action, "/disable-noise") == 0) {
-
+		if (isActionByChannel(action)) {
 			getHttpRootSetByChannelSection(htmlResponse, action);
 		} else if (strcmp(action, "/set-timer") == 0) {
 			getHttpRootSetTimerSection(htmlResponse, action);

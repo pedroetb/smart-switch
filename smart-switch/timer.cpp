@@ -2,8 +2,23 @@
 
 uint32_t timerTimeout = timerTimeoutDefault;
 uint32_t timerStartTime = 0;
-bool timerEnabled = true;
+bool timerEnabled[channelsAvailable];
 bool timerRunning = false;
+
+bool getTimerEnabled(uint8_t index) {
+
+	return timerEnabled[index];
+}
+
+bool getTimerEnabled() {
+
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		if (getTimerEnabled(i)) {
+			return true;
+		}
+	}
+	return false;
+}
 
 void getTimerTimeout(char *timeoutBuffer) {
 
@@ -25,7 +40,11 @@ void timerSetup() {
 
 	logSerialMessage("\n--- Timer setup ---");
 
-	if (timerEnabled) {
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		timerEnabled[i] = true;
+	}
+
+	if (getTimerEnabled()) {
 		logTimerSetupEnd();
 	}
 }
@@ -54,32 +73,62 @@ void clearTimer() {
 	timerRunning = false;
 }
 
-void enableTimer() {
+void enableTimer(uint8_t index) {
 
-	if (timerEnabled) {
+	if (timerEnabled[index]) {
 		return;
 	}
 
-	timerEnabled = true;
-	logMessage("Auto-off timer enabled");
+	timerEnabled[index] = true;
+
+	char msg[38] = "Auto-off timer enabled in channel #";
+	char tmp[4];
+	itoa(index + 1, tmp, 10);
+	strcat(msg, tmp);
+	logMessage(msg);
+}
+
+void enableTimer() {
+
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		enableTimer(i);
+	}
+}
+
+void disableTimer(uint8_t index) {
+
+	if (!timerEnabled[index]) {
+		return;
+	}
+
+	timerEnabled[index] = false;
+	if (!getTimerEnabled()) {
+		clearTimer();
+	}
+
+	char msg[38] = "Auto-off timer disabled in channel #";
+	char tmp[4];
+	itoa(index + 1, tmp, 10);
+	strcat(msg, tmp);
+	logMessage(msg);
 }
 
 void disableTimer() {
 
-	if (!timerEnabled) {
-		return;
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		disableTimer(i);
 	}
-
-	timerEnabled = false;
-	clearTimer();
-	logMessage("Auto-off timer disabled");
 }
 
 void triggerTimer() {
 
 	clearTimer();
 	logMessage("Auto-off timer triggered");
-	switchOff();
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		if (timerEnabled[i]) {
+			switchOff(i);
+		}
+	}
 }
 
 uint32_t getTimerElapsedTime() {
@@ -91,17 +140,33 @@ uint32_t getTimerElapsedTime() {
 	return (uint32_t)(millis() - timerStartTime);
 }
 
+bool timerIsUseless() {
+
+	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		if (timerEnabled[i] && getPowerStatus(i)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void cancelTimer() {
+
+	if (!timerRunning) {
+		return;
+	}
+	clearTimer();
+	logMessage("Auto-off timer cancelled");
+}
+
 void evalTimerStatus(uint32_t currEvalTime) {
 
-	if (!timerEnabled) {
+	if (!getTimerEnabled()) {
 		return;
 	}
 
-	if (!getPowerStatus()) {
-		if (timerRunning) {
-			clearTimer();
-			logMessage("Auto-off timer cleared");
-		}
+	if (!getPowerStatus() || timerIsUseless()) {
+		cancelTimer();
 		return;
 	}
 
@@ -146,9 +211,4 @@ void setTimerTimeout(const char *timeout) {
 uint32_t getTimerTimeout() {
 
 	return timerTimeout;
-}
-
-bool getTimerEnabled() {
-
-	return timerEnabled;
 }

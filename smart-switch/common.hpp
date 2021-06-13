@@ -21,12 +21,12 @@ constexpr char actions[actionsLength][maxActionSize] = {
 	"/enable-ota", "/disable-ota",
 };
 constexpr uint8_t arrayValueSize = 3 * channelsAvailable + 3;
-constexpr uint16_t deviceStatusMaxSize = 384 + (3 * channelsAvailable + 2) * 4;
+constexpr uint16_t deviceStatusMaxSize = 383 + (3 * channelsAvailable + 2) * 5;
 constexpr char deviceStatusTemplate[430] = "{\n"
 	"\t\"powerStatus\": %s,\n"
 	"\t\"netFrequency\": %s,\n"
 	"\t\"relayStatus\": %s,\n"
-	"\t\"timerEnabled\": %u,\n"
+	"\t\"timerEnabled\": %s,\n"
 	"\t\"timerElapsedTime\": %u,\n"
 	"\t\"timerTimeout\": %u,\n"
 	"\t\"noiseEnabled\": %s,\n"
@@ -46,6 +46,7 @@ void commonSetup();
 void restartBoard();
 void getDeviceStatus(char *deviceStatusBuffer);
 bool validateChannel(const uint8_t channel);
+bool isActionByChannel(const char *action);
 void logSerialMessage(const char *message);
 void logMessage(const char *message);
 

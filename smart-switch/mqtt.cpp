@@ -182,9 +182,7 @@ void getMqttRootResponse(char *res) {
 		}
 		strcat(res, "\n\t");
 		strcat(res, action);
-		if (strcmp(action, "/on") == 0 || strcmp(action, "/off") == 0 || strcmp(action, "/toggle") == 0 ||
-			strcmp(action, "/enable-noise") == 0 || strcmp(action, "/disable-noise") == 0) {
-
+		if (isActionByChannel(action)) {
 			strcat(res, " [<channel>]");
 		} else if (strcmp(action, "/set-timer") == 0) {
 			strcat(res, " <timeout>");
@@ -281,9 +279,7 @@ void handleMqttRequest(const char *mqttMsg) {
 
 	if (strcmp(cmd, "/") == 0) {
 		onMqttRootRequest();
-	} else if (strcmp(cmd, "/on") == 0 || strcmp(cmd, "/off") == 0 || strcmp(cmd, "/toggle") == 0 ||
-		strcmp(cmd, "/enable-noise") == 0 || strcmp(cmd, "/disable-noise") == 0) {
-
+	} else if (isActionByChannel(cmd)) {
 		onMqttActionByChannelRequest(cmd, param);
 	} else if (strcmp(cmd, "/status") == 0) {
 		onMqttStatusRequest();

@@ -37,6 +37,12 @@ void getArrayPropertyValue(char *buffer, const char *propName) {
 			} else {
 				strcat(buffer, "0");
 			}
+		} else if (strcmp(propName, "timerEnabled") == 0) {
+			if (getTimerEnabled(i)) {
+				strcat(buffer, "1");
+			} else {
+				strcat(buffer, "0");
+			}
 		} else if (strcmp(propName, "noiseEnabled") == 0) {
 			if (getNoiseEnabled(i)) {
 				strcat(buffer, "1");
@@ -63,12 +69,15 @@ void getDeviceStatus(char *deviceStatusBuffer) {
 	getArrayPropertyValue(netFrequencyBuffer, "netFrequency");
 	char relayStatusBuffer[arrayValueSize];
 	getArrayPropertyValue(relayStatusBuffer, "relayStatus");
+	char timerEnabledBuffer[arrayValueSize];
+	getArrayPropertyValue(timerEnabledBuffer, "timerEnabled");
 	char noiseEnabledBuffer[arrayValueSize];
 	getArrayPropertyValue(noiseEnabledBuffer, "noiseEnabled");
 
 	snprintf(deviceStatusBuffer, deviceStatusMaxSize, deviceStatusTemplate,
 		powerStatusBuffer, netFrequencyBuffer, relayStatusBuffer,
-		getTimerEnabled(), getTimerElapsedTime(), getTimerTimeout(), noiseEnabledBuffer, getNoiseValue(),
+		timerEnabledBuffer, getTimerElapsedTime(), getTimerTimeout(),
+		noiseEnabledBuffer, getNoiseValue(),
 		getWifiStatus(), macBuffer, ssidBuffer, ipBuffer, getWifiRssi(),
 		getHttpEnabled(), getMqttEnabled(), getMqttStatus(), getOtaEnabled());
 }
@@ -80,6 +89,13 @@ bool validateChannel(const uint8_t channel) {
 		logMessage("Received invalid channel to operate");
 	}
 	return validChannel;
+}
+
+bool isActionByChannel(const char *action) {
+
+	return strcmp(action, "/on") == 0 || strcmp(action, "/off") == 0 || strcmp(action, "/toggle") == 0 ||
+		strcmp(action, "/enable-noise") == 0 || strcmp(action, "/disable-noise") == 0 ||
+		strcmp(action, "/enable-timer") == 0 || strcmp(action, "/disable-timer") == 0;
 }
 
 void logSerialMessage(const char *message) {
