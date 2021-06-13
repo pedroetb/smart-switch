@@ -20,7 +20,7 @@ constexpr char actions[actionsLength][maxActionSize] = {
 	"/enable-mqtt", "/disable-mqtt",
 	"/enable-ota", "/disable-ota",
 };
-constexpr uint8_t arrayValueSize = 3 * channelsAvailable + 3;
+constexpr uint8_t arrayValueSize = 4 * channelsAvailable + 3;
 constexpr uint16_t deviceStatusMaxSize = 383 + (3 * channelsAvailable + 2) * 5;
 constexpr char deviceStatusTemplate[430] = "{\n"
 	"\t\"powerStatus\": %s,\n"
