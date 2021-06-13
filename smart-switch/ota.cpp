@@ -17,6 +17,10 @@ void logOtaStart(const char *updateType) {
 void onOtaStart() {
 
 	switchOff();
+	disableTimer();
+	disableNoise();
+	disableHttp();
+
 	mqttConnect();
 
 	char updateType[11];
@@ -78,6 +82,7 @@ void onOtaError(ota_error_t error) {
 		strcpy(errorType, "End");
 	}
 	logOtaError(errorType);
+	restartBoard();
 }
 
 void setOtaHostname() {

@@ -7,6 +7,7 @@
 #include "timer.hpp"
 #include "noise.hpp"
 #include "wifi.hpp"
+#include "http.hpp"
 #include "mqtt.hpp"
 
 constexpr uint8_t actionsLength = 17;

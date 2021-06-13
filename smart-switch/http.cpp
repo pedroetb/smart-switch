@@ -98,7 +98,7 @@ void sendActionResponse(uint16_t statusCode, const char *responseMessage) {
 	}
 }
 
-void sendActionSuccessResponse(const char *successMessage) {
+void sendActionSuccess(const char *successMessage) {
 
 	sendActionResponse(200, successMessage);
 }
@@ -136,7 +136,7 @@ void sendChannelPowerChanged(uint8_t channelNumber, const char *msgEnding) {
 	strcat(msg, channelLabel);
 	strcat(msg, msgEnding);
 
-	sendActionSuccessResponse(msg);
+	sendActionSuccess(msg);
 }
 
 void sendActionByChannelError() {
@@ -155,7 +155,7 @@ void handleOn() {
 		sendChannelPowerChanged(channel, " set to on");
 	} else if (channel == 0) {
 		switchOn();
-		sendActionSuccessResponse("All channels power set to on");
+		sendActionSuccess("All channels power set to on");
 	} else {
 		sendActionByChannelError();
 	}
@@ -171,7 +171,7 @@ void handleOff() {
 		sendChannelPowerChanged(channel, " set to off");
 	} else if (channel == 0) {
 		switchOff();
-		sendActionSuccessResponse("All channels power set to off");
+		sendActionSuccess("All channels power set to off");
 	} else {
 		sendActionByChannelError();
 	}
@@ -187,7 +187,7 @@ void handleToggle() {
 		sendChannelPowerChanged(channel, " toggled");
 	} else if (channel == 0) {
 		toggleRelay();
-		sendActionSuccessResponse("All channels power toggled");
+		sendActionSuccess("All channels power toggled");
 	} else {
 		sendActionByChannelError();
 	}
@@ -216,7 +216,7 @@ void handleStatus() {
 	}
 }
 
-void sendChannelEnabledFeatureChanged(uint8_t channelNumber, const char *msgStart) {
+void sendActionByChannelSuccess(uint8_t channelNumber, const char *msgStart) {
 
 	char msg[37];
 	strcpy(msg, msgStart);
@@ -225,7 +225,7 @@ void sendChannelEnabledFeatureChanged(uint8_t channelNumber, const char *msgStar
 	itoa(channelNumber, channelLabel, 10);
 	strcat(msg, channelLabel);
 
-	sendActionSuccessResponse(msg);
+	sendActionSuccess(msg);
 }
 
 void handleEnableNoise() {
@@ -235,10 +235,10 @@ void handleEnableNoise() {
 	int8_t channel = getChannelParam();
 	if (channel > 0) {
 		enableNoise(channel - 1);
-		sendChannelEnabledFeatureChanged(channel, "Noise trigger enabled");
+		sendActionByChannelSuccess(channel, "Noise trigger enabled");
 	} else if (channel == 0) {
 		enableNoise();
-		sendActionSuccessResponse("Noise trigger enabled in all channels");
+		sendActionSuccess("Noise trigger enabled in all channels");
 	} else {
 		sendActionByChannelError();
 	}
@@ -251,10 +251,10 @@ void handleDisableNoise() {
 	int8_t channel = getChannelParam();
 	if (channel > 0) {
 		disableNoise(channel - 1);
-		sendChannelEnabledFeatureChanged(channel, "Noise trigger disabled");
+		sendActionByChannelSuccess(channel, "Noise trigger disabled");
 	} else if (channel == 0) {
 		disableNoise();
-		sendActionSuccessResponse("Noise trigger disabled in all channels");
+		sendActionSuccess("Noise trigger disabled in all channels");
 	} else {
 		sendActionByChannelError();
 	}
@@ -267,10 +267,10 @@ void handleEnableTimer() {
 	int8_t channel = getChannelParam();
 	if (channel > 0) {
 		enableTimer(channel - 1);
-		sendChannelEnabledFeatureChanged(channel, "Auto-off timer enabled");
+		sendActionByChannelSuccess(channel, "Auto-off timer enabled");
 	} else if (channel == 0) {
 		enableTimer();
-		sendActionSuccessResponse("Auto-off timer enabled in all channels");
+		sendActionSuccess("Auto-off timer enabled in all channels");
 	} else {
 		sendActionByChannelError();
 	}
@@ -283,10 +283,10 @@ void handleDisableTimer() {
 	int8_t channel = getChannelParam();
 	if (channel > 0) {
 		disableTimer(channel - 1);
-		sendChannelEnabledFeatureChanged(channel, "Auto-off timer disabled");
+		sendActionByChannelSuccess(channel, "Auto-off timer disabled");
 	} else if (channel == 0) {
 		disableTimer();
-		sendActionSuccessResponse("Auto-off timer disabled in all channels");
+		sendActionSuccess("Auto-off timer disabled in all channels");
 	} else {
 		sendActionByChannelError();
 	}
@@ -300,7 +300,7 @@ void sendTimeoutSet() {
 	strcat(msg, tmp);
 	strcat(msg, " ms");
 
-	sendActionSuccessResponse(msg);
+	sendActionSuccess(msg);
 }
 
 void handleSetTimer() {
@@ -331,34 +331,34 @@ void handleEnableMqtt() {
 
 	printHttpRequest();
 	enableMqtt();
-	sendActionSuccessResponse("MQTT communication enabled");
+	sendActionSuccess("MQTT communication enabled");
 }
 
 void handleDisableMqtt() {
 
 	printHttpRequest();
 	disableMqtt();
-	sendActionSuccessResponse("MQTT communication disabled");
+	sendActionSuccess("MQTT communication disabled");
 }
 
 void handleEnableOta() {
 
 	printHttpRequest();
 	enableOta();
-	sendActionSuccessResponse("OTA update enabled");
+	sendActionSuccess("OTA update enabled");
 }
 
 void handleDisableOta() {
 
 	printHttpRequest();
 	disableOta();
-	sendActionSuccessResponse("OTA update disabled");
+	sendActionSuccess("OTA update disabled");
 }
 
 void handleReset() {
 
 	printHttpRequest();
-	sendActionSuccessResponse("Restarting..");
+	sendActionSuccess("Restarting..");
 	restartBoard();
 }
 
