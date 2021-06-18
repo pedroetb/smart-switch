@@ -9,7 +9,8 @@ uint32_t lastFrequencyMeasureEndTime = 0;
 uint32_t lastFrequencyMeasureStartTime = 0;
 uint32_t lastZeroCrossingTime[channelsAvailable] = {};
 
-void ICACHE_RAM_ATTR zeroCrossingManagement(uint8_t index) {
+template<uint8_t index>
+inline void ICACHE_RAM_ATTR zeroCrossingCallback() {
 
 	if (measuringFrequency) {
 		zeroCrossingCounter[index]++;
@@ -19,25 +20,17 @@ void ICACHE_RAM_ATTR zeroCrossingManagement(uint8_t index) {
 	powerStatus[index] = true;
 }
 
-#define ZERO_CROSSING_CALLBACK_DEFINITION(channel) \
-void ICACHE_RAM_ATTR zeroCrossingCallback_##channel () { \
-	zeroCrossingManagement(channel - 1); \
-}
-// One macro call by channel
-ZERO_CROSSING_CALLBACK_DEFINITION(1)
-ZERO_CROSSING_CALLBACK_DEFINITION(2)
-
 void measureSetup() {
 
 	logSerialMessage("\n--- Measure setup ---");
 
 	for (uint8_t i = 0; i < channelsAvailable; i++) {
-
 		pinMode(measurePin[i], INPUT_PULLUP);
 	}
+
 	// One attach by channel
-	attachInterrupt(digitalPinToInterrupt(measurePin[0]), zeroCrossingCallback_1, RISING);
-	attachInterrupt(digitalPinToInterrupt(measurePin[1]), zeroCrossingCallback_2, RISING);
+	attachInterrupt(digitalPinToInterrupt(measurePin[0]), zeroCrossingCallback<0>, RISING);
+	attachInterrupt(digitalPinToInterrupt(measurePin[1]), zeroCrossingCallback<1>, RISING);
 
 	logSerialMessage("Listening signal zero-crossing events");
 }
