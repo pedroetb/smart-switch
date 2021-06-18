@@ -41,15 +41,13 @@ constexpr uint16_t noisePatternDebounceTimeout = 800;
 // wifi
 constexpr char wifiSsid[33] = "<ssid>"; // max. length 32
 constexpr char wifiPass[64] = "<pass>"; // max. length 63
-constexpr uint8_t wifiConnectRetries = 15;
-constexpr uint16_t wifiConnectTimeout = 1500;
-constexpr uint16_t wifiEvalTimeout = 30000;
+constexpr uint16_t wifiEvalInterval = 10000;
 
 // http
 constexpr uint16_t httpServerPort = 80;
 constexpr uint8_t httpRedirectTimeout = 5;
 constexpr uint8_t httpRefreshInterval = 30;
-constexpr uint16_t httpEvalTimeout = 1000;
+constexpr uint16_t httpEvalInterval = 1000;
 
 // mqtt
 constexpr char mqttBrokerUrl[65] = "<broker>"; // max. length 64
@@ -59,10 +57,12 @@ constexpr char mqttPass[65] = "<pass>"; // max. length 64
 constexpr uint16_t mqttMaxPacketSize = 64; // max. length 28
 constexpr uint8_t mqttKeepAlive = 15;
 constexpr uint8_t mqttSocketTimeout = 15;
-constexpr uint16_t mqttEvalTimeout = 1000;
+constexpr uint8_t mqttResolveTimeout = 1000;
+constexpr uint16_t mqttEvalInterval = 1000;
+constexpr uint16_t mqttReconnectInterval = 10000;
 
 // ota
 constexpr uint16_t otaPort = 8266;
-constexpr uint16_t otaEvalTimeout = 3000;
+constexpr uint16_t otaEvalInterval = 3000;
 
 #endif

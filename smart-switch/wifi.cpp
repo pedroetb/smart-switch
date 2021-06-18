@@ -1,16 +1,20 @@
 #include "wifi.hpp"
 
-uint32_t lastWifiConnectTime = 0;
 uint32_t lastWifiEvalTime = 0;
 bool wifiFailure = false;
 bool wifiSettingUp = true;
-uint8_t connectRetriesSpent = 0;
+
+void wifiConnect() {
+
+	WiFi.begin(wifiSsid, wifiPass);
+}
 
 void wifiSetup() {
 
 	logSerialMessage("\n--- WiFi setup ---");
 
 	WiFi.mode(WIFI_STA);
+	wifiConnect();
 
 	logSerialMessage("WiFi connection is starting");
 }
@@ -50,11 +54,6 @@ int32_t getWifiRssi() {
 	return WiFi.RSSI();
 }
 
-bool getWifiStatus() {
-
-	return WiFi.status() == WL_CONNECTED;
-}
-
 void printWifiInfo() {
 
 	logSerialMessage("\n--- WiFi status ---");
@@ -84,70 +83,45 @@ void printWifiInfo() {
 	logSerialMessage(msg);
 }
 
-void notifyWifiReconnected() {
-
-	if (wifiFailure) {
-		wifiFailure = false;
-		logMessage("WiFi connection restablished");
-	}
-}
-
-void wifiConnect(uint32_t currWifiConnectTime) {
-
-	if ((uint32_t)(currWifiConnectTime - lastWifiConnectTime) < wifiConnectTimeout && !wifiSettingUp) {
-		return;
-	}
-
-	lastWifiConnectTime = currWifiConnectTime;
+void onWifiConnected() {
 
 	if (wifiSettingUp) {
 		wifiSettingUp = false;
+		logMessage("Connected to WiFi");
+		printWifiInfo();
+	} else if (wifiFailure) {
+		wifiFailure = false;
+		logMessage("WiFi connection re-established");
 	}
+}
 
-	if (connectRetriesSpent == 0) {
-		WiFi.begin(wifiSsid, wifiPass);
-		logSerialMessage("Connecting to WiFi");
+void onWifiFailed() {
+
+	if (!wifiFailure && !wifiSettingUp) {
+		wifiFailure = true;
+		logSerialMessage("WiFi was disconnected, establishing new connection");
 	}
+}
 
-	if (connectRetriesSpent < wifiConnectRetries) {
-		if (getWifiStatus()) {
-			connectRetriesSpent = 0;
-			lastWifiConnectTime = 0;
-			logMessage("Connected to WiFi");
-			printWifiInfo();
-			notifyWifiReconnected();
-			return;
-		} else {
-			connectRetriesSpent++;
-		}
+bool getWifiStatus() {
+
+	const bool wifiConnected = WiFi.status() == WL_CONNECTED;
+	if (wifiConnected) {
+		onWifiConnected();
 	} else {
-		connectRetriesSpent = 0;
-		logSerialMessage("Connection to WiFi failed");
+		onWifiFailed();
 	}
+	return wifiConnected;
 }
 
 void evalWifiStatus(uint32_t currEvalTime) {
 
-	if (connectRetriesSpent > 0 || wifiSettingUp) {
-		wifiConnect(currEvalTime);
+	if ((uint32_t)(currEvalTime - lastWifiEvalTime) < wifiEvalInterval) {
 		return;
 	}
-
-	if ((uint32_t)(currEvalTime - lastWifiEvalTime) < wifiEvalTimeout) {
-		return;
-	}
-
 	lastWifiEvalTime = currEvalTime;
 
-	if (getWifiStatus()) {
-		if (wifiFailure) {
-			notifyWifiReconnected();
-			printWifiInfo();
-		}
-		return;
-	}
-
-	wifiFailure = true;
-	logSerialMessage("WiFi was disconnected, establishing new connection");
-	wifiConnect(currEvalTime);
+	if (!getWifiStatus()) {
+		logSerialMessage("Connection to WiFi failed");
+	};
 }

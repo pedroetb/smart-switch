@@ -154,7 +154,7 @@ void evalOtaStatus(uint32_t currEvalTime) {
 		return;
 	}
 
-	if ((uint32_t)(currEvalTime - lastOtaEvalTime) < otaEvalTimeout) {
+	if ((uint32_t)(currEvalTime - lastOtaEvalTime) < otaEvalInterval) {
 		return;
 	}
 	lastOtaEvalTime = currEvalTime;

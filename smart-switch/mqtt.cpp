@@ -6,8 +6,9 @@ char mqttClientId[38];
 char mqttOutputTopic[41];
 char mqttInputTopic[45];
 uint32_t lastMqttEvalTime = 0;
+uint32_t lastMqttReconnectTime = 0;
 bool previouslyConnected = false;
-bool mqttDisconnected = true;
+bool mqttConectionLost = true;
 bool mqttEnabled = true;
 
 void setMqttClientId() {
@@ -42,6 +43,8 @@ void setMqttInputTopic() {
 void mqttSetup() {
 
 	logSerialMessage("\n--- MQTT setup ---");
+
+	wifiClient.setTimeout(mqttResolveTimeout);
 
 	mqttClient.setClient(wifiClient);
 	mqttClient.setServer(mqttBrokerUrl, mqttBrokerPort);
@@ -78,6 +81,15 @@ void logMqttMessage(const char *message) {
 		mqttClient.print(msg);
 		mqttClient.endPublish();
 	}
+}
+
+void onMqttConnected() {
+
+	logMessage("MQTT connection established");
+	previouslyConnected = true;
+	mqttConectionLost = false;
+	mqttClient.unsubscribe(mqttInputTopic);
+	mqttClient.subscribe(mqttInputTopic);
 }
 
 void getMqttErrorMeaning(char *message, const int8_t state) {
@@ -126,14 +138,11 @@ void mqttConnect() {
 
 	if (previouslyConnected) {
 		logSerialMessage("MQTT was disconnected, establishing new connection");
+		previouslyConnected = false;
 	}
 
 	if (mqttClient.connect(mqttClientId, mqttUser, mqttPass)) {
-		logMessage("MQTT connection established");
-		previouslyConnected = true;
-		mqttDisconnected = false;
-		mqttClient.unsubscribe(mqttInputTopic);
-		mqttClient.subscribe(mqttInputTopic);
+		onMqttConnected();
 	} else {
 		logMqttConnectionError();
 	}
@@ -141,12 +150,11 @@ void mqttConnect() {
 
 void mqttDisconnect() {
 
-	if (mqttDisconnected) {
+	if (!getMqttStatus()) {
 		return;
 	}
 	mqttClient.unsubscribe(mqttInputTopic);
 	mqttClient.disconnect();
-	mqttDisconnected = true;
 	if (previouslyConnected) {
 		logSerialMessage("MQTT connection closed");
 	}
@@ -336,12 +344,24 @@ void evalMqttStatus(uint32_t currEvalTime) {
 		return;
 	}
 
-	if ((uint32_t)(currEvalTime - lastMqttEvalTime) < mqttEvalTimeout) {
+	if ((uint32_t)(currEvalTime - lastMqttReconnectTime) >= mqttReconnectInterval) {
+		lastMqttReconnectTime = currEvalTime;
+		mqttConnect();
+	}
+
+	if (!getMqttStatus()) {
+		if (previouslyConnected && !mqttConectionLost) {
+			mqttConectionLost = true;
+			logSerialMessage("MQTT connection lost");
+		}
+		return;
+	}
+
+	if ((uint32_t)(currEvalTime - lastMqttEvalTime) < mqttEvalInterval) {
 		return;
 	}
 	lastMqttEvalTime = currEvalTime;
 
-	mqttConnect();
 	mqttClient.loop();
 }
 

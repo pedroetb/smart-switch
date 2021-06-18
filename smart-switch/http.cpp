@@ -539,7 +539,7 @@ void evalHttpStatus(uint32_t currEvalTime) {
 		return;
 	}
 
-	if ((uint32_t)(currEvalTime - lastHttpEvalTime) < httpEvalTimeout) {
+	if ((uint32_t)(currEvalTime - lastHttpEvalTime) < httpEvalInterval) {
 		return;
 	}
 	lastHttpEvalTime = currEvalTime;
