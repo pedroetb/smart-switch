@@ -5,9 +5,9 @@
 #include "common.hpp"
 
 void measureSetup();
-void evalMeasureStatus(uint32_t currEvalTime);
-bool getPowerStatus(uint8_t index);
+void evalMeasureStatus(const uint32_t currEvalTime);
+bool getPowerStatus(const uint8_t index);
 bool getPowerStatus();
-uint8_t getNetFrequency(uint8_t index);
+uint8_t getNetFrequency(const uint8_t index);
 
 #endif

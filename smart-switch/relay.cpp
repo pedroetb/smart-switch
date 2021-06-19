@@ -2,12 +2,12 @@
 
 bool relayStatus[channelsAvailable] = {};
 
-bool getRelayStatus(uint8_t index) {
+bool getRelayStatus(const uint8_t index) {
 
 	return relayStatus[index];
 }
 
-void writeRelayStatus(uint8_t index) {
+void writeRelayStatus(const uint8_t index) {
 
 	digitalWrite(relayPin[index], !getRelayStatus(index)); // HIGH/LOW are inverted on NodeMCU
 }
@@ -24,12 +24,12 @@ void relaySetup() {
 	logSerialMessage("Managing relays state");
 }
 
-void setRelayStatus(uint8_t index, bool status) {
+void setRelayStatus(const uint8_t index, const bool status) {
 
 	relayStatus[index] = status;
 }
 
-void logApplyRelayStatus(uint8_t index) {
+void logApplyRelayStatus(const uint8_t index) {
 
 	char msg[37] = "Relay status in channel #";
 	char tmp[4];
@@ -46,25 +46,25 @@ void logApplyRelayStatus(uint8_t index) {
 	logMessage(msg);
 }
 
-void applyRelayStatus(uint8_t index) {
+void applyRelayStatus(const uint8_t index) {
 
 	logApplyRelayStatus(index);
 	writeRelayStatus(index);
 }
 
-void enableRelay(uint8_t index) {
+void enableRelay(const uint8_t index) {
 
 	setRelayStatus(index, true);
 	applyRelayStatus(index);
 }
 
-void disableRelay(uint8_t index) {
+void disableRelay(const uint8_t index) {
 
 	setRelayStatus(index, false);
 	applyRelayStatus(index);
 }
 
-void toggleRelay(uint8_t index) {
+void toggleRelay(const uint8_t index) {
 
 	setRelayStatus(index, !getRelayStatus(index));
 	applyRelayStatus(index);
@@ -77,9 +77,9 @@ void toggleRelay() {
 	}
 }
 
-void switchOn(uint8_t index) {
+void switchOn(const uint8_t index) {
 
-	bool powerStatus = getPowerStatus(index);
+	const bool powerStatus = getPowerStatus(index);
 	if (!powerStatus) {
 		toggleRelay(index);
 	}
@@ -92,9 +92,9 @@ void switchOn() {
 	}
 }
 
-void switchOff(uint8_t index) {
+void switchOff(const uint8_t index) {
 
-	bool powerStatus = getPowerStatus(index);
+	const bool powerStatus = getPowerStatus(index);
 	if (powerStatus) {
 		toggleRelay(index);
 	}

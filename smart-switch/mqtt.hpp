@@ -19,8 +19,8 @@ constexpr uint8_t mqttSocketTimeout = 15;
 constexpr uint8_t mqttResolveTimeout = 1000;
 
 void mqttSetup();
-void evalMqttStatus(uint32_t currEvalTime);
-void mqttCallback(char *topic, uint8_t *payload, uint8_t length);
+void evalMqttStatus(const uint32_t currEvalTime);
+void mqttCallback(const char *topic, const uint8_t *payload, const uint8_t length);
 void mqttConnect();
 void logMqttMessage(const char *message);
 void enableMqtt();

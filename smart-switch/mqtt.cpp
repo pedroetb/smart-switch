@@ -66,7 +66,7 @@ bool getMqttStatus() {
 	return mqttClient.connected();
 }
 
-void publishMqttMessage(const char *message, const char *topic, bool retain = false) {
+void publishMqttMessage(const char *message, const char *topic, const bool retain = false) {
 
 	const uint16_t length = strlen(message);
 
@@ -88,7 +88,7 @@ void logMqttMessage(const char *message) {
 	publishMqttMessage(message, mqttLogTopic);
 }
 
-void outputMqttMessage(const char *message, bool retain = false) {
+void outputMqttMessage(const char *message, const bool retain = false) {
 
 	if (!mqttEnabled) {
 		return;
@@ -183,7 +183,7 @@ void getMqttCommandAndParam(char *cmd, char *param, const char *mqttMsg) {
 		cmd[mqttMaxPayloadSize - 1] = '\0';
 		param[0] = '\0';
 	} else {
-		uint8_t separatorPosition = separatorLocation - mqttMsg;
+		const uint8_t separatorPosition = separatorLocation - mqttMsg;
 
 		strncpy(cmd, mqttMsg, separatorPosition);
 		cmd[separatorPosition] = '\0';
@@ -339,7 +339,7 @@ void handleMqttRequest(const char *mqttMsg) {
 	}
 }
 
-void getMqttMessage(char *mqttMsg, uint8_t *payload, uint8_t length) {
+void getMqttMessage(char *mqttMsg, const uint8_t *payload, const uint8_t length) {
 
 	for (uint8_t i = 0; i < length; i++) {
 		mqttMsg[i] = (char)payload[i];
@@ -355,7 +355,7 @@ void logMqttReceivedMessage(const char *mqttMsg) {
 	logMessage(msg);
 }
 
-void mqttCallback(char *topic, uint8_t *payload, uint8_t length) {
+void mqttCallback(const char *topic, const uint8_t *payload, const uint8_t length) {
 
 	if (length >= mqttMaxPayloadSize) {
 		logMessage("Received too long MQTT payload");
@@ -368,7 +368,7 @@ void mqttCallback(char *topic, uint8_t *payload, uint8_t length) {
 	handleMqttRequest(messageBuffer);
 }
 
-void evalMqttStatus(uint32_t currEvalTime) {
+void evalMqttStatus(const uint32_t currEvalTime) {
 
 	if (!mqttEnabled || !getWifiStatus()) {
 		mqttDisconnect();

@@ -56,12 +56,18 @@ void getArrayPropertyValue(char *buffer, const char *propName) {
 
 void getDeviceStatus(char *deviceStatusBuffer) {
 
-	char macBuffer[18];
-	getWifiMac(macBuffer);
-	char ssidBuffer[33];
-	getWifiSsid(ssidBuffer);
-	char ipBuffer[16];
-	getWifiIp(ipBuffer);
+	static char macBuffer[18];
+	if (strlen(macBuffer) == 0) {
+		getWifiMac(macBuffer);
+	}
+	static char ssidBuffer[33];
+	if (strlen(ssidBuffer) == 0) {
+		getWifiSsid(ssidBuffer);
+	}
+	static char ipBuffer[16];
+	if (strlen(ipBuffer) == 0) {
+		getWifiIp(ipBuffer);
+	}
 
 	char powerStatusBuffer[arrayValueSize];
 	getArrayPropertyValue(powerStatusBuffer, "powerStatus");
@@ -84,7 +90,7 @@ void getDeviceStatus(char *deviceStatusBuffer) {
 
 bool validateChannel(const uint8_t channel) {
 
-	bool validChannel = channel > 0 && channel <= channelsAvailable;
+	const bool validChannel = channel > 0 && channel <= channelsAvailable;
 	if (!validChannel) {
 		logMessage("Received invalid channel to operate");
 	}

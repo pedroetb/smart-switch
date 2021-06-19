@@ -5,7 +5,7 @@ uint32_t timerStartTime = 0;
 bool timerEnabled[channelsAvailable];
 bool timerRunning = false;
 
-bool getTimerEnabled(uint8_t index) {
+bool getTimerEnabled(const uint8_t index) {
 
 	return timerEnabled[index];
 }
@@ -60,7 +60,7 @@ void logTimerStart() {
 	logMessage(msg);
 }
 
-void startTimer(uint32_t startTime) {
+void startTimer(const uint32_t startTime) {
 
 	timerStartTime = startTime;
 	timerRunning = true;
@@ -73,7 +73,7 @@ void clearTimer() {
 	timerRunning = false;
 }
 
-void enableTimer(uint8_t index) {
+void enableTimer(const uint8_t index) {
 
 	if (timerEnabled[index]) {
 		return;
@@ -95,7 +95,7 @@ void enableTimer() {
 	}
 }
 
-void disableTimer(uint8_t index) {
+void disableTimer(const uint8_t index) {
 
 	if (!timerEnabled[index]) {
 		return;
@@ -159,7 +159,7 @@ void cancelTimer() {
 	logMessage("Auto-off timer cancelled");
 }
 
-void evalTimerStatus(uint32_t currEvalTime) {
+void evalTimerStatus(const uint32_t currEvalTime) {
 
 	if (!getTimerEnabled()) {
 		return;
@@ -192,7 +192,7 @@ void logTimerTimeoutSet() {
 	logMessage(msg);
 }
 
-void setTimerTimeout(uint32_t timeout) {
+void setTimerTimeout(const uint32_t timeout) {
 
 	timerTimeout = timeout;
 	logTimerTimeoutSet();
@@ -200,7 +200,7 @@ void setTimerTimeout(uint32_t timeout) {
 
 void setTimerTimeout(const char *timeout) {
 
-	uint32_t timeoutNum = strtoul(timeout, 0, 10);
+	const uint32_t timeoutNum = strtoul(timeout, 0, 10);
 	if (timeoutNum != 0) {
 		setTimerTimeout(timeoutNum);
 	} else {

@@ -12,7 +12,7 @@
 #include "mqtt.hpp"
 
 void otaSetup();
-void evalOtaStatus(uint32_t currEvalTime);
+void evalOtaStatus(const uint32_t currEvalTime);
 void enableOta();
 void disableOta();
 bool getOtaEnabled();

@@ -6,7 +6,7 @@
 #include "common.hpp"
 
 void wifiSetup();
-void evalWifiStatus(uint32_t currEvalTime);
+void evalWifiStatus(const uint32_t currEvalTime);
 void getWifiMac(char *macBuffer);
 void getWifiSsid(char *ssidBuffer);
 void getWifiIp(char *ipBuffer);

@@ -15,7 +15,7 @@
 constexpr uint8_t httpMaxItemLength = 16; // Request path, arg name and arg value
 
 void httpSetup();
-void evalHttpStatus(uint32_t currEvalTime);
+void evalHttpStatus(const uint32_t currEvalTime);
 void enableHttp();
 void disableHttp();
 bool getHttpEnabled();

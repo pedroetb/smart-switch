@@ -114,7 +114,7 @@ bool getWifiStatus() {
 	return wifiConnected;
 }
 
-void evalWifiStatus(uint32_t currEvalTime) {
+void evalWifiStatus(const uint32_t currEvalTime) {
 
 	if ((uint32_t)(currEvalTime - lastWifiEvalTime) < wifiEvalInterval) {
 		return;

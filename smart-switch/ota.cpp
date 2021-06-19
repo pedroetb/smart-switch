@@ -1,6 +1,6 @@
 #include "ota.hpp"
 
-char otaHostname[65];
+char otaHostname[38];
 uint32_t lastOtaEvalTime = 0;
 int8_t lastPercentage = -1;
 bool otaEnabled = false;
@@ -43,10 +43,10 @@ void logOtaProgress(const uint8_t percentage) {
 	logMessage(msg);
 }
 
-void onOtaProgress(uint32_t progress, uint32_t total) {
+void onOtaProgress(const uint32_t progress, const uint32_t total) {
 
-	int8_t percentage = progress * 100 / total;
-	uint8_t progressMarkReached = !(percentage % 25);
+	const int8_t percentage = progress * 100 / total;
+	const uint8_t progressMarkReached = !(percentage % 25);
 	if (progressMarkReached && percentage > lastPercentage) {
 		logOtaProgress(percentage);
 		lastPercentage = percentage;
@@ -67,7 +67,7 @@ void logOtaError(const char *errorType) {
 	logMessage(msg);
 }
 
-void onOtaError(ota_error_t error) {
+void onOtaError(const ota_error_t error) {
 
 	char errorType[8] = "Unknown";
 	if (error == OTA_AUTH_ERROR) {
@@ -148,7 +148,7 @@ void otaConnect() {
 	logOtaConnect();
 }
 
-void evalOtaStatus(uint32_t currEvalTime) {
+void evalOtaStatus(const uint32_t currEvalTime) {
 
 	if (!otaEnabled || !getWifiStatus()) {
 		return;

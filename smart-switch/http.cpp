@@ -24,7 +24,7 @@ void logHttpRequestUri() {
 	logMessage(msg);
 }
 
-void logHttpRequestArg(const uint8_t &i) {
+void logHttpRequestArg(const uint8_t i) {
 
 	char msg[2 * httpMaxItemLength + 21] = "HTTP received arg: ";
 	strncat(msg, server.argName(i).c_str(), httpMaxItemLength);
@@ -36,7 +36,7 @@ void logHttpRequestArg(const uint8_t &i) {
 void printHttpRequest() {
 
 	logHttpRequestUri();
-	uint8_t argsCount = server.args();
+	const uint8_t argsCount = server.args();
 	for (uint8_t i = 0; i < argsCount; i++) {
 		logHttpRequestArg(i);
 	}
@@ -50,15 +50,16 @@ void getHttpParamValue(char *paramValue, const char *paramName) {
 
 bool checkFormatIsHtml() {
 
-	if (server.hasArg("format")) {
+	const char paramName[7] = "format";
+	if (server.hasArg(paramName)) {
 		char format[httpMaxItemLength];
-		getHttpParamValue(format, "format");
+		getHttpParamValue(format, paramName);
 		return strcmp(format, "html") == 0;
 	}
 	return false;
 }
 
-void sendResponse(uint16_t statusCode, const char *contentType, const char *content) {
+void sendResponse(const uint16_t statusCode, const char *contentType, const char *content) {
 
 	server.send(statusCode, contentType, content, strlen(content));
 }
@@ -99,7 +100,7 @@ void getHttpActionResponse(char *htmlResponse, const char *message) {
 	getHttpResponseEnd(htmlResponse);
 }
 
-void sendActionResponse(uint16_t statusCode, const char *responseMessage) {
+void sendActionResponse(const uint16_t statusCode, const char *responseMessage) {
 
 	if (checkFormatIsHtml()) {
 		char htmlResponse[256];
@@ -117,21 +118,23 @@ void sendActionSuccess(const char *successMessage) {
 
 int8_t getChannelParam() {
 
-	if (!server.hasArg("channel")) {
+	const char paramName[8] = "channel";
+
+	if (!server.hasArg(paramName)) {
 		return 0;
 	}
 
 	char channelBuffer[httpMaxItemLength];
-	getHttpParamValue(channelBuffer, "channel");
+	getHttpParamValue(channelBuffer, paramName);
 
-	uint8_t channelLength = strlen(channelBuffer);
+	const uint8_t channelLength = strlen(channelBuffer);
 	if (channelLength == 0) {
 		return 0;
 	} else if (channelLength > 3) {
 		return -1;
 	}
 
-	uint8_t channelNumber = atoi(channelBuffer);
+	const uint8_t channelNumber = atoi(channelBuffer);
 
 	if (!validateChannel(channelNumber)) {
 		return -1;
@@ -140,7 +143,7 @@ int8_t getChannelParam() {
 	return channelNumber;
 }
 
-void sendChannelPowerChanged(uint8_t channelNumber, const char *msgEnding) {
+void sendChannelPowerChanged(const uint8_t channelNumber, const char *msgEnding) {
 
 	char msg[33] = "Power of channel #";
 	char channelLabel[4];
@@ -161,7 +164,7 @@ void handleOn() {
 
 	printHttpRequest();
 
-	int8_t channel = getChannelParam();
+	const int8_t channel = getChannelParam();
 	if (channel > 0) {
 		switchOn(channel - 1);
 		sendChannelPowerChanged(channel, " set to on");
@@ -177,7 +180,7 @@ void handleOff() {
 
 	printHttpRequest();
 
-	int8_t channel = getChannelParam();
+	const int8_t channel = getChannelParam();
 	if (channel > 0) {
 		switchOff(channel - 1);
 		sendChannelPowerChanged(channel, " set to off");
@@ -193,7 +196,7 @@ void handleToggle() {
 
 	printHttpRequest();
 
-	int8_t channel = getChannelParam();
+	const int8_t channel = getChannelParam();
 	if (channel > 0) {
 		toggleRelay(channel - 1);
 		sendChannelPowerChanged(channel, " toggled");
@@ -228,7 +231,7 @@ void handleStatus() {
 	}
 }
 
-void sendActionByChannelSuccess(uint8_t channelNumber, const char *msgStart) {
+void sendActionByChannelSuccess(const uint8_t channelNumber, const char *msgStart) {
 
 	char msg[37];
 	strcpy(msg, msgStart);
@@ -244,7 +247,7 @@ void handleEnableNoise() {
 
 	printHttpRequest();
 
-	int8_t channel = getChannelParam();
+	const int8_t channel = getChannelParam();
 	if (channel > 0) {
 		enableNoise(channel - 1);
 		sendActionByChannelSuccess(channel, "Noise trigger enabled");
@@ -260,7 +263,7 @@ void handleDisableNoise() {
 
 	printHttpRequest();
 
-	int8_t channel = getChannelParam();
+	const int8_t channel = getChannelParam();
 	if (channel > 0) {
 		disableNoise(channel - 1);
 		sendActionByChannelSuccess(channel, "Noise trigger disabled");
@@ -276,7 +279,7 @@ void handleEnableTimer() {
 
 	printHttpRequest();
 
-	int8_t channel = getChannelParam();
+	const int8_t channel = getChannelParam();
 	if (channel > 0) {
 		enableTimer(channel - 1);
 		sendActionByChannelSuccess(channel, "Auto-off timer enabled");
@@ -292,7 +295,7 @@ void handleDisableTimer() {
 
 	printHttpRequest();
 
-	int8_t channel = getChannelParam();
+	const int8_t channel = getChannelParam();
 	if (channel > 0) {
 		disableTimer(channel - 1);
 		sendActionByChannelSuccess(channel, "Auto-off timer disabled");
@@ -319,16 +322,18 @@ void handleSetTimer() {
 
 	printHttpRequest();
 
-	if (!server.hasArg("timeout")) {
+	const char paramName[8] = "timeout";
+
+	if (!server.hasArg(paramName)) {
 		logMessage("Missing timeout parameter for '/set-timer' HTTP action");
 		sendActionResponse(400, "Missing argument: 'timeout'");
 		return;
 	}
 
 	char timeout[httpMaxItemLength];
-	getHttpParamValue(timeout, "timeout");
+	getHttpParamValue(timeout, paramName);
 
-	uint8_t timeoutLength = strlen(timeout);
+	const uint8_t timeoutLength = strlen(timeout);
 	if (timeoutLength == 0 || timeoutLength > 10) {
 		logMessage("Received invalid parameter for '/set-timer' HTTP action");
 		sendActionResponse(400, "Invalid argument: 'timeout'");
@@ -545,7 +550,7 @@ void httpSetup() {
 	httpConnect();
 }
 
-void evalHttpStatus(uint32_t currEvalTime) {
+void evalHttpStatus(const uint32_t currEvalTime) {
 
 	if (!httpEnabled || !getWifiStatus()) {
 		return;

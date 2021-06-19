@@ -36,7 +36,7 @@ void setup() {
 
 void loop() {
 
-	uint32_t currEvalTime = millis();
+	const uint32_t currEvalTime = millis();
 
 	evalMeasureStatus(currEvalTime);
 	evalTimerStatus(currEvalTime);

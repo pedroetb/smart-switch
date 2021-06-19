@@ -19,7 +19,7 @@ void noiseSetup() {
 	logSerialMessage("Listening double-clap sound patterns");
 }
 
-bool getNoiseEnabled(uint8_t index) {
+bool getNoiseEnabled(const uint8_t index) {
 
 	return noiseEnabled[index];
 }
@@ -34,7 +34,7 @@ bool getNoiseEnabled() {
 	return false;
 }
 
-void onNoiseTrigger(uint32_t currEvalTime) {
+void onNoiseTrigger(const uint32_t currEvalTime) {
 
 	logMessage("Noise (double clap) detected");
 
@@ -47,7 +47,7 @@ void onNoiseTrigger(uint32_t currEvalTime) {
 	lastAcceptedNoiseTime = currEvalTime;
 }
 
-void evalNoiseStatus(uint32_t currEvalTime) {
+void evalNoiseStatus(const uint32_t currEvalTime) {
 
 	if (!getNoiseEnabled()) {
 		return;
@@ -60,12 +60,12 @@ void evalNoiseStatus(uint32_t currEvalTime) {
 		return;
 	}
 
-	bool silenceInPreviousEval = lastNoiseValue == 0;
+	const bool silenceInPreviousEval = lastNoiseValue == 0;
 
 	if (silenceInPreviousEval) {
-		bool noiseIsDiscontinuous = currEvalTime - noiseLongDebounceTimeout > lastNoiseTime;
-		bool noiseIsNotOverlapped = currEvalTime - noiseRepetitiveDebounceTimeout < lastNoiseTime;
-		bool lastNoisePatternFinished = currEvalTime - noisePatternDebounceTimeout > lastAcceptedNoiseTime;
+		const bool noiseIsDiscontinuous = currEvalTime - noiseLongDebounceTimeout > lastNoiseTime;
+		const bool noiseIsNotOverlapped = currEvalTime - noiseRepetitiveDebounceTimeout < lastNoiseTime;
+		const bool lastNoisePatternFinished = currEvalTime - noisePatternDebounceTimeout > lastAcceptedNoiseTime;
 
 		if (noiseIsDiscontinuous && noiseIsNotOverlapped && lastNoisePatternFinished) {
 			onNoiseTrigger(currEvalTime);
@@ -76,7 +76,7 @@ void evalNoiseStatus(uint32_t currEvalTime) {
 	lastNoiseValue = noiseValue;
 }
 
-void enableNoise(uint8_t index) {
+void enableNoise(const uint8_t index) {
 
 	if (noiseEnabled[index]) {
 		return;
@@ -98,7 +98,7 @@ void enableNoise() {
 	}
 }
 
-void disableNoise(uint8_t index) {
+void disableNoise(const uint8_t index) {
 
 	if (!noiseEnabled[index]) {
 		return;

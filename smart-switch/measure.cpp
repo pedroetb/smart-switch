@@ -35,7 +35,7 @@ void measureSetup() {
 	logSerialMessage("Listening signal zero-crossing events");
 }
 
-void logMeasureChange(uint8_t index) {
+void logMeasureChange(const uint8_t index) {
 
 	char msg[37] = "Power status in channel #";
 	char tmp[4];
@@ -52,7 +52,7 @@ void logMeasureChange(uint8_t index) {
 	logMessage(msg);
 }
 
-void handlePowerStatus(uint8_t index, uint32_t currTime) {
+void handlePowerStatus(const uint8_t index, const uint32_t currTime) {
 
 	if (powerStatus[index] && lastZeroCrossingTime[index] > 0 && lastZeroCrossingTime[index] < currTime &&
 		(uint32_t)(currTime - lastZeroCrossingTime[index]) >= resetPowerStatusTimeout) {
@@ -67,13 +67,13 @@ void handlePowerStatus(uint8_t index, uint32_t currTime) {
 	}
 }
 
-void onMeasurementStart(uint32_t currTime) {
+void onMeasurementStart(const uint32_t currTime) {
 
 	measuringFrequency = true;
 	lastFrequencyMeasureStartTime = currTime;
 }
 
-void onMeasurementDone(uint32_t currTime) {
+void onMeasurementDone(const uint32_t currTime) {
 
 	measuringFrequency = false;
 	lastFrequencyMeasureEndTime = currTime;
@@ -86,7 +86,7 @@ void onMeasurementDone(uint32_t currTime) {
 	lastFrequencyMeasureStartTime = 0;
 }
 
-void measureFrequency(uint32_t currTime) {
+void measureFrequency(const uint32_t currTime) {
 
 	if (measuringFrequency) {
 		if (currTime - lastFrequencyMeasureStartTime >= measureFrequencyDuration) {
@@ -98,7 +98,7 @@ void measureFrequency(uint32_t currTime) {
 	}
 }
 
-void evalMeasureStatus(uint32_t currEvalTime) {
+void evalMeasureStatus(const uint32_t currEvalTime) {
 
 	for (uint8_t i = 0; i < channelsAvailable; i++) {
 		handlePowerStatus(i, currEvalTime);
@@ -107,7 +107,7 @@ void evalMeasureStatus(uint32_t currEvalTime) {
 	measureFrequency(millis());
 }
 
-bool getPowerStatus(uint8_t index) {
+bool getPowerStatus(const uint8_t index) {
 
 	return powerStatus[index];
 }
@@ -122,7 +122,7 @@ bool getPowerStatus() {
 	return false;
 }
 
-uint8_t getNetFrequency(uint8_t index) {
+uint8_t getNetFrequency(const uint8_t index) {
 
 	return lastFrequencyMeasured[index];
 }

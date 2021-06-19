@@ -6,14 +6,14 @@
 #include "measure.hpp"
 
 void relaySetup();
-bool getRelayStatus(uint8_t index);
-void enableRelay(uint8_t index);
-void disableRelay(uint8_t index);
-void toggleRelay(uint8_t index);
+bool getRelayStatus(const uint8_t index);
+void enableRelay(const uint8_t index);
+void disableRelay(const uint8_t index);
+void toggleRelay(const uint8_t index);
 void toggleRelay();
-void switchOn(uint8_t index);
+void switchOn(const uint8_t index);
 void switchOn();
-void switchOff(uint8_t index);
+void switchOff(const uint8_t index);
 void switchOff();
 
 #endif
