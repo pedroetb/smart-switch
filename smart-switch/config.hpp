@@ -11,7 +11,7 @@ constexpr bool mqttLogEnabled = true;
 constexpr char rootName[17] = "pedroetb"; // max. length 16
 constexpr char commonName[17] = "smart-switch"; // max. length 16
 constexpr char uniqueId[4] = "001"; // max. length 3
-constexpr uint8_t channelsAvailable = 2;
+constexpr uint8_t channelsAvailable = 2; // if changed, add new pins and one attach per channel at measure setup
 
 // relay
 constexpr uint8_t relayPin[channelsAvailable] = {
@@ -54,10 +54,6 @@ constexpr char mqttBrokerUrl[65] = "<broker>"; // max. length 64
 constexpr uint16_t mqttBrokerPort = 1883;
 constexpr char mqttUser[65] = "<user>"; // max. length 64
 constexpr char mqttPass[65] = "<pass>"; // max. length 64
-constexpr uint16_t mqttMaxPacketSize = 64; // max. length 28
-constexpr uint8_t mqttKeepAlive = 15;
-constexpr uint8_t mqttSocketTimeout = 15;
-constexpr uint8_t mqttResolveTimeout = 1000;
 constexpr uint16_t mqttEvalInterval = 1000;
 constexpr uint16_t mqttReconnectInterval = 10000;
 

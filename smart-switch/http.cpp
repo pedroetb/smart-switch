@@ -1,5 +1,17 @@
 #include "http.hpp"
 
+constexpr uint8_t httpTimeoutsLength = 10;
+constexpr uint8_t httpTimeoutLabelMaxSize = 4;
+constexpr uint8_t httpTimeoutValueMaxSize = maxParamSize;
+constexpr char httpTimeoutLabels[httpTimeoutsLength][httpTimeoutLabelMaxSize] = {
+	"1m", "5m", "10m", "30m", "1h",
+	"6h", "12h", "1d", "1w", "1mo"
+};
+constexpr char httpTimeoutValues[httpTimeoutsLength][httpTimeoutValueMaxSize] = {
+	"60000", "300000", "600000", "1800000", "3600000",
+	"21600000", "43200000", "86400000", "604800000", "2628000000"
+};
+
 ESP8266WebServer server(httpServerPort);
 char httpTitle[38];
 uint32_t lastHttpEvalTime = 0;
@@ -294,8 +306,8 @@ void handleDisableTimer() {
 
 void sendTimeoutSet() {
 
-	char msg[44] = "Auto-off timer timeout set to ";
-	char tmp[11];
+	char msg[httpTimeoutValueMaxSize + 33] = "Auto-off timer timeout set to ";
+	char tmp[httpTimeoutValueMaxSize];
 	getTimerTimeout(tmp);
 	strcat(msg, tmp);
 	strcat(msg, " ms");

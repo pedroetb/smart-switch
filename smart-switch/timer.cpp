@@ -22,13 +22,13 @@ bool getTimerEnabled() {
 
 void getTimerTimeout(char *timeoutBuffer) {
 
-	snprintf(timeoutBuffer, 11, "%lu", timerTimeout);
+	snprintf(timeoutBuffer, maxParamSize, "%lu", timerTimeout);
 }
 
 void logTimerSetupEnd() {
 
-	char msg[36] = "Auto-off timer set to ";
-	char tmp[11];
+	char msg[maxParamSize + 25] = "Auto-off timer set to ";
+	char tmp[maxParamSize];
 	getTimerTimeout(tmp);
 	strcat(msg, tmp);
 	strcat(msg, " ms");
@@ -51,8 +51,8 @@ void timerSetup() {
 
 void logTimerStart() {
 
-	char msg[45] = "Auto-off timer will trigger in ";
-	char tmp[11];
+	char msg[maxParamSize + 34] = "Auto-off timer will trigger in ";
+	char tmp[maxParamSize];
 	getTimerTimeout(tmp);
 	strcat(msg, tmp);
 	strcat(msg, " ms");
@@ -183,8 +183,8 @@ void evalTimerStatus(uint32_t currEvalTime) {
 
 void logTimerTimeoutSet() {
 
-	char msg[45] = "Auto-off timer timeout set to ";
-	char tmp[11];
+	char msg[maxParamSize + 33] = "Auto-off timer timeout set to ";
+	char tmp[maxParamSize];
 	getTimerTimeout(tmp);
 	strcat(msg, tmp);
 	strcat(msg, " ms");

@@ -12,6 +12,7 @@
 
 constexpr uint8_t actionsLength = 17;
 constexpr uint8_t maxActionSize = 15; // max. length 14
+constexpr uint8_t maxParamSize = 11; // max. length 10
 constexpr char actions[actionsLength][maxActionSize] = {
 	"/", "/status", "/reset",
 	"/on", "/off", "/toggle",

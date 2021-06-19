@@ -13,6 +13,11 @@
 #include "http.hpp"
 #include "ota.hpp"
 
+constexpr uint16_t mqttMaxPacketSize = 128; // max. payload length is: this - topic length - header length (4)
+constexpr uint8_t mqttKeepAlive = 15;
+constexpr uint8_t mqttSocketTimeout = 15;
+constexpr uint8_t mqttResolveTimeout = 1000;
+
 void mqttSetup();
 void evalMqttStatus(uint32_t currEvalTime);
 void mqttCallback(char *topic, uint8_t *payload, uint8_t length);
