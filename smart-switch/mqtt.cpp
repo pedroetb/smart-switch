@@ -362,7 +362,6 @@ void mqttCallback(char *topic, uint8_t *payload, uint8_t length) {
 		return;
 	}
 
-	delay(1000); // TODO needed because of PubSubClient bug (cannot publish from subscribe callback)
 	char messageBuffer[length + 1];
 	getMqttMessage(messageBuffer, payload, length);
 	logMqttReceivedMessage(messageBuffer);
