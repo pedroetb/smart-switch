@@ -1,6 +1,5 @@
 #include "ota.hpp"
 
-char otaHostname[38];
 uint32_t lastOtaEvalTime = 0;
 int8_t lastPercentage = -1;
 bool otaEnabled = false;
@@ -85,16 +84,7 @@ void onOtaError(const ota_error_t error) {
 	restartBoard();
 }
 
-void setOtaHostname() {
-
-	strcpy(otaHostname, rootName);
-	strcat(otaHostname, "-");
-	strcat(otaHostname, commonName);
-	strcat(otaHostname, "-");
-	strcat(otaHostname, uniqueId);
-}
-
-void logOtaSetupEnd() {
+void logOtaSetupEnd(const char *otaHostname) {
 
 	char msg[110] = "OTA configured at ";
 	strcat(msg, otaHostname);
@@ -110,7 +100,8 @@ void otaSetup() {
 
 	logSerialMessage("\n--- OTA setup ---");
 
-	setOtaHostname();
+	char otaHostname[38];
+	getDeviceId(otaHostname);
 
 	ArduinoOTA.setHostname(otaHostname);
 	ArduinoOTA.setPort(otaPort);
@@ -121,7 +112,7 @@ void otaSetup() {
 	ArduinoOTA.onEnd(onOtaEnd);
 	ArduinoOTA.onError(onOtaError);
 
-	logOtaSetupEnd();
+	logOtaSetupEnd(otaHostname);
 }
 
 void logOtaConnect() {

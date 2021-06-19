@@ -4,23 +4,16 @@ uint32_t lastWifiEvalTime = 0;
 bool wifiFailure = false;
 bool wifiSettingUp = true;
 
-void setWifiHostname() {
-
-	char wifiHostname[38];
-	strcpy(wifiHostname, rootName);
-	strcat(wifiHostname, "-");
-	strcat(wifiHostname, commonName);
-	strcat(wifiHostname, "-");
-	strcat(wifiHostname, uniqueId);
-	WiFi.hostname(wifiHostname);
-}
-
 void wifiSetup() {
 
 	logSerialMessage("\n--- WiFi setup ---");
 
 	WiFi.mode(WIFI_STA);
-	setWifiHostname();
+
+	char wifiHostname[38];
+	getDeviceId(wifiHostname);
+	WiFi.hostname(wifiHostname);
+
 	WiFi.begin(wifiSsid, wifiPass);
 
 	logSerialMessage("WiFi connection is starting");

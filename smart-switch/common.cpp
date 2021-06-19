@@ -1,10 +1,22 @@
 #include "common.hpp"
 
+char deviceId[38];
+
+void setDeviceId() {
+
+	strcpy(deviceId, rootName);
+	strcat(deviceId, "-");
+	strcat(deviceId, commonName);
+	strcat(deviceId, "-");
+	strcat(deviceId, uniqueId);
+}
+
 void commonSetup() {
 
 	if (serialLogEnabled) {
 		Serial.begin(bauds);
 	}
+	setDeviceId();
 	logSerialMessage("\n--- Start smart-switch ---");
 }
 
@@ -52,6 +64,11 @@ void getArrayPropertyValue(char *buffer, const char *propName) {
 		}
 	}
 	strcat(buffer, " ]");
+}
+
+void getDeviceId(char *deviceIdBuffer) {
+
+	strcpy(deviceIdBuffer, deviceId);
 }
 
 void getDeviceStatus(char *deviceStatusBuffer) {

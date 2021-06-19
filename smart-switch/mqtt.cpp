@@ -4,7 +4,6 @@ constexpr uint8_t mqttMaxPayloadSize = maxActionSize + maxParamSize; // max. len
 
 WiFiClient wifiClient;
 PubSubClient mqttClient;
-char mqttClientId[38];
 char mqttLogTopic[42];
 char mqttOutputTopic[45];
 char mqttInputTopic[44];
@@ -13,15 +12,6 @@ uint32_t lastMqttReconnectTime = 0;
 bool previouslyConnected = false;
 bool mqttConectionLost = true;
 bool mqttEnabled = true;
-
-void setMqttClientId() {
-
-	strcpy(mqttClientId, rootName);
-	strcat(mqttClientId, "-");
-	strcat(mqttClientId, commonName);
-	strcat(mqttClientId, "-");
-	strcat(mqttClientId, uniqueId);
-}
 
 void setMqttTopics() {
 
@@ -55,7 +45,6 @@ void mqttSetup() {
 	mqttClient.setKeepAlive(mqttKeepAlive);
 	mqttClient.setSocketTimeout(mqttSocketTimeout);
 
-	setMqttClientId();
 	setMqttTopics();
 
 	logSerialMessage("MQTT client started, waiting for connection");
@@ -153,6 +142,11 @@ void mqttConnect() {
 	if (previouslyConnected) {
 		logSerialMessage("MQTT was disconnected, establishing new connection");
 		previouslyConnected = false;
+	}
+
+	static char mqttClientId[38];
+	if (strlen(mqttClientId) == 0) {
+		getDeviceId(mqttClientId);
 	}
 
 	if (mqttClient.connect(mqttClientId, mqttUser, mqttPass)) {

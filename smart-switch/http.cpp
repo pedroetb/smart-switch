@@ -515,19 +515,10 @@ void httpDisconnect() {
 	logMessage("HTTP server stopped");
 }
 
-void setHttpTitle() {
-
-	strcpy(httpTitle, rootName);
-	strcat(httpTitle, "-");
-	strcat(httpTitle, commonName);
-	strcat(httpTitle, "-");
-	strcat(httpTitle, uniqueId);
-}
-
 void httpSetup() {
 
 	logSerialMessage("\n--- HTTP setup ---");
-	setHttpTitle();
+	getDeviceId(httpTitle);
 
 	server.on("/", HTTP_GET, handleRoot);
 	server.on("/on", HTTP_GET, handleOn);

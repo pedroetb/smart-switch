@@ -46,6 +46,7 @@ constexpr char deviceStatusTemplate[430] = "{\n"
 
 void commonSetup();
 void restartBoard();
+void getDeviceId(char *deviceIdBuffer);
 void getDeviceStatus(char *deviceStatusBuffer);
 bool validateChannel(const uint8_t channel);
 bool isActionByChannel(const char *action);
