@@ -98,11 +98,9 @@ void getDeviceStatus(char *deviceStatusBuffer) {
 	getArrayPropertyValue(noiseEnabledBuffer, "noiseEnabled");
 
 	snprintf(deviceStatusBuffer, deviceStatusMaxSize, deviceStatusTemplate,
-		powerStatusBuffer, netFrequencyBuffer, relayStatusBuffer,
-		timerEnabledBuffer, getTimerElapsedTime(), getTimerTimeout(),
-		noiseEnabledBuffer, getNoiseValue(),
-		getWifiStatus(), macBuffer, ssidBuffer, ipBuffer, getWifiRssi(),
-		getHttpEnabled(), getMqttEnabled(), getMqttStatus(), getOtaEnabled());
+		deviceId, powerStatusBuffer, netFrequencyBuffer, relayStatusBuffer, timerEnabledBuffer, getTimerElapsedTime(),
+		getTimerTimeout(), noiseEnabledBuffer, getNoiseValue(), getWifiStatus(), macBuffer, ssidBuffer, ipBuffer,
+		getWifiRssi(), getHttpEnabled(), getMqttEnabled(), getMqttStatus(), getOtaEnabled());
 }
 
 bool validateChannel(const uint8_t channel) {

@@ -23,13 +23,14 @@ constexpr char actions[actionsLength][maxActionSize] = {
 	"/enable-ota", "/disable-ota",
 };
 constexpr uint8_t arrayValueSize = 4 * channelsAvailable + 3;
-constexpr uint16_t deviceStatusMaxSize = 383 + (3 * channelsAvailable + 2) * 5;
-constexpr char deviceStatusTemplate[430] = "{\n"
+constexpr uint16_t deviceStatusMaxSize = 427 + (3 * channelsAvailable + 2) * 5;
+constexpr char deviceStatusTemplate[338] = "{\n"
+	"\t\"id\": \"%s\",\n"
 	"\t\"powerStatus\": %s,\n"
 	"\t\"netFrequency\": %s,\n"
 	"\t\"relayStatus\": %s,\n"
 	"\t\"timerEnabled\": %s,\n"
-	"\t\"timerElapsedTime\": %u,\n"
+	"\t\"timerElapsed\": %u,\n"
 	"\t\"timerTimeout\": %u,\n"
 	"\t\"noiseEnabled\": %s,\n"
 	"\t\"noiseValue\": %u,\n"
