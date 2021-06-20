@@ -54,9 +54,12 @@ void logMeasureChange(const uint8_t index) {
 
 void handlePowerStatus(const uint8_t index, const uint32_t currTime) {
 
-	if (powerStatus[index] && lastZeroCrossingTime[index] > 0 && lastZeroCrossingTime[index] < currTime &&
-		(uint32_t)(currTime - lastZeroCrossingTime[index]) >= resetPowerStatusTimeout) {
+	const uint32_t lastPowerDetectedTime = lastZeroCrossingTime[index];
+	const bool powerWasOnRecently = powerStatus[index];
+	const bool powerDetectedBeforeThisIteration = lastPowerDetectedTime > 0 && lastPowerDetectedTime < currTime;
+	const bool powerLossDetectionThresholdReached = (uint32_t)(currTime - lastPowerDetectedTime) >= resetPowerStatusTimeout;
 
+	if (powerWasOnRecently && powerDetectedBeforeThisIteration && powerLossDetectionThresholdReached) {
 		powerStatus[index] = false;
 		lastZeroCrossingTime[index] = 0;
 	}
