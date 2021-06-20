@@ -123,7 +123,7 @@ bool getWifiStatus() {
 
 void evalWifiStatus(const uint32_t currEvalTime) {
 
-	if ((uint32_t)(currEvalTime - lastWifiEvalTime) < wifiEvalInterval) {
+	if ((currEvalTime - lastWifiEvalTime) < wifiEvalInterval) {
 		return;
 	}
 	lastWifiEvalTime = currEvalTime;

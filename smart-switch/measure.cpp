@@ -57,7 +57,7 @@ void handlePowerStatus(const uint8_t index, const uint32_t currTime) {
 	const uint32_t lastPowerDetectedTime = lastZeroCrossingTime[index];
 	const bool powerWasOnRecently = powerStatus[index];
 	const bool powerDetectedBeforeThisIteration = lastPowerDetectedTime > 0 && lastPowerDetectedTime < currTime;
-	const bool powerLossDetectionThresholdReached = (uint32_t)(currTime - lastPowerDetectedTime) >= resetPowerStatusTimeout;
+	const bool powerLossDetectionThresholdReached = (currTime - lastPowerDetectedTime) >= resetPowerStatusTimeout;
 
 	if (powerWasOnRecently && powerDetectedBeforeThisIteration && powerLossDetectionThresholdReached) {
 		powerStatus[index] = false;
@@ -96,7 +96,7 @@ void measureFrequency(const uint32_t currTime) {
 			onMeasurementDone(currTime);
 		}
 
-	} else if ((uint32_t)(currTime - lastFrequencyMeasureEndTime) >= measureFrequencyInterval) {
+	} else if ((currTime - lastFrequencyMeasureEndTime) >= measureFrequencyInterval) {
 		onMeasurementStart(currTime);
 	}
 }

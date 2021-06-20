@@ -369,12 +369,12 @@ void evalMqttStatus(const uint32_t currEvalTime) {
 		return;
 	}
 
-	if ((uint32_t)(currEvalTime - lastMqttReconnectTime) >= mqttReconnectInterval) {
+	if ((currEvalTime - lastMqttReconnectTime) >= mqttReconnectInterval) {
 		lastMqttReconnectTime = currEvalTime;
 		mqttConnect();
 	}
 
-	if ((uint32_t)(currEvalTime - lastMqttEvalTime) < mqttEvalInterval) {
+	if ((currEvalTime - lastMqttEvalTime) < mqttEvalInterval) {
 		return;
 	}
 	lastMqttEvalTime = currEvalTime;

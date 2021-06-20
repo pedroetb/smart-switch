@@ -145,7 +145,7 @@ void evalOtaStatus(const uint32_t currEvalTime) {
 		return;
 	}
 
-	if ((uint32_t)(currEvalTime - lastOtaEvalTime) < otaEvalInterval) {
+	if ((currEvalTime - lastOtaEvalTime) < otaEvalInterval) {
 		return;
 	}
 	lastOtaEvalTime = currEvalTime;

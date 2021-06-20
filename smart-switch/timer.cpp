@@ -137,7 +137,7 @@ uint32_t getTimerElapsedTime() {
 		return 0;
 	}
 
-	return (uint32_t)(millis() - timerStartTime);
+	return millis() - timerStartTime;
 }
 
 bool timerIsUseless() {
@@ -174,7 +174,7 @@ void evalTimerStatus(const uint32_t currEvalTime) {
 		startTimer(currEvalTime);
 	}
 
-	if ((uint32_t)(currEvalTime - timerStartTime) < timerTimeout) {
+	if ((currEvalTime - timerStartTime) < timerTimeout) {
 		return;
 	}
 

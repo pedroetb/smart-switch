@@ -547,7 +547,7 @@ void evalHttpStatus(const uint32_t currEvalTime) {
 		return;
 	}
 
-	if ((uint32_t)(currEvalTime - lastHttpEvalTime) < httpEvalInterval) {
+	if ((currEvalTime - lastHttpEvalTime) < httpEvalInterval) {
 		return;
 	}
 	lastHttpEvalTime = currEvalTime;
