@@ -26,11 +26,10 @@ constexpr uint8_t measurePin[channelsAvailable] = {
 };
 constexpr uint8_t resetPowerStatusTimeout = 100;
 constexpr uint16_t measureFrequencyInterval = 10000;
-constexpr uint16_t measureFrequencyDuration = 1000;
-constexpr uint8_t measureFrequencyDivisor = 2;
 
 // timer
 constexpr uint32_t timerTimeoutDefault = 600000;
+constexpr uint16_t timerWarmingTimeout = resetPowerStatusTimeout * 1.5;
 
 // noise
 constexpr uint8_t noisePin = D2; // GPIO4

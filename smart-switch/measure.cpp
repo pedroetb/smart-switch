@@ -92,10 +92,9 @@ void onMeasurementDone(const uint32_t currTime) {
 void measureFrequency(const uint32_t currTime) {
 
 	if (measuringFrequency) {
-		if (currTime - lastFrequencyMeasureStartTime >= measureFrequencyDuration) {
+		if ((currTime - lastFrequencyMeasureStartTime) >= measureFrequencyDuration) {
 			onMeasurementDone(currTime);
 		}
-
 	} else if ((currTime - lastFrequencyMeasureEndTime) >= measureFrequencyInterval) {
 		onMeasurementStart(currTime);
 	}
@@ -103,11 +102,11 @@ void measureFrequency(const uint32_t currTime) {
 
 void evalMeasureStatus(const uint32_t currEvalTime) {
 
+	measureFrequency(currEvalTime);
+
 	for (uint8_t i = 0; i < channelsAvailable; i++) {
 		handlePowerStatus(i, currEvalTime);
 	}
-
-	measureFrequency(millis());
 }
 
 bool getPowerStatus(const uint8_t index) {

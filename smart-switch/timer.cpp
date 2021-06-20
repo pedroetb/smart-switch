@@ -2,6 +2,7 @@
 
 uint32_t timerTimeout = timerTimeoutDefault;
 uint32_t timerStartTime = 0;
+uint32_t timerWarmingStart = 0;
 bool timerEnabled[channelsAvailable];
 bool timerRunning = false;
 
@@ -171,6 +172,13 @@ void evalTimerStatus(const uint32_t currEvalTime) {
 	}
 
 	if (!timerRunning) {
+		if (timerWarmingStart == 0) {
+			timerWarmingStart = currEvalTime;
+		}
+		if ((currEvalTime - timerWarmingStart) < timerWarmingTimeout) {
+			return;
+		}
+		timerWarmingStart = 0;
 		startTimer(currEvalTime);
 	}
 
