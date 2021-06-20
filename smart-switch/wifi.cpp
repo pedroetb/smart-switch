@@ -58,17 +58,23 @@ void printWifiInfo() {
 
 	logSerialMessage("\n--- WiFi status ---");
 
-	char msg[64];
-	char tmp[33];
+	char msg[39];
+	static char macBuffer[18];
+	static char ssidBuffer[33];
+	char tmp[16];
 
 	strcpy(msg, "MAC address: ");
-	getWifiMac(tmp);
-	strcat(msg, tmp);
+	if (strlen(macBuffer) == 0) {
+		getWifiMac(macBuffer);
+	}
+	strcat(msg, macBuffer);
 	logSerialMessage(msg);
 
 	strcpy(msg, "SSID: ");
-	getWifiSsid(tmp);
-	strcat(msg, tmp);
+	if (strlen(ssidBuffer) == 0) {
+		getWifiSsid(ssidBuffer);
+	}
+	strcat(msg, ssidBuffer);
 	logSerialMessage(msg);
 
 	strcpy(msg, "IP address: ");
@@ -92,6 +98,7 @@ void onWifiConnected() {
 	} else if (wifiFailure) {
 		wifiFailure = false;
 		logMessage("WiFi connection re-established");
+		printWifiInfo();
 	}
 }
 
@@ -122,6 +129,6 @@ void evalWifiStatus(const uint32_t currEvalTime) {
 	lastWifiEvalTime = currEvalTime;
 
 	if (!getWifiStatus()) {
-		logSerialMessage("Connection to WiFi failed");
+		logSerialMessage("WiFi connection failed");
 	};
 }

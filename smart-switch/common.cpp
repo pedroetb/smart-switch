@@ -81,10 +81,8 @@ void getDeviceStatus(char *deviceStatusBuffer) {
 	if (strlen(ssidBuffer) == 0) {
 		getWifiSsid(ssidBuffer);
 	}
-	static char ipBuffer[16];
-	if (strlen(ipBuffer) == 0) {
-		getWifiIp(ipBuffer);
-	}
+	char ipBuffer[16];
+	getWifiIp(ipBuffer);
 
 	char powerStatusBuffer[arrayValueSize];
 	getArrayPropertyValue(powerStatusBuffer, "powerStatus");
