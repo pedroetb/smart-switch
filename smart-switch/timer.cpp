@@ -14,7 +14,7 @@ bool getTimerEnabled(const uint8_t index) {
 bool getTimerEnabled() {
 
 	for (uint8_t i = 0; i < channelsAvailable; i++) {
-		if (getTimerEnabled(i)) {
+		if (timerEnabled[i]) {
 			return true;
 		}
 	}

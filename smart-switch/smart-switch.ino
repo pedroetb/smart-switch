@@ -23,13 +23,13 @@ void setup() {
 
 	commonSetup();
 	relaySetup();
-	measureSetup();
 	timerSetup();
 	noiseSetup();
 	wifiSetup();
 	httpSetup();
 	mqttSetup();
 	otaSetup();
+	measureSetup();
 
 	logSetupEnd();
 }

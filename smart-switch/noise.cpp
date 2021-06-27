@@ -27,7 +27,7 @@ bool getNoiseEnabled(const uint8_t index) {
 bool getNoiseEnabled() {
 
 	for (uint8_t i = 0; i < channelsAvailable; i++) {
-		if (getNoiseEnabled(i)) {
+		if (noiseEnabled[i]) {
 			return true;
 		}
 	}

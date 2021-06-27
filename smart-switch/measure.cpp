@@ -1,13 +1,13 @@
 #include "measure.hpp"
 
-bool powerStatus[channelsAvailable] = {};
-bool lastPowerStatus[channelsAvailable] = {};
+bool powerStatus[channelsAvailable];
+bool lastPowerStatus[channelsAvailable];
 bool measuringFrequency = false;
-uint8_t zeroCrossingCounter[channelsAvailable] = {};
-uint8_t lastFrequencyMeasured[channelsAvailable] = {};
+uint8_t zeroCrossingCounter[channelsAvailable];
+uint8_t lastFrequencyMeasured[channelsAvailable];
 uint32_t lastFrequencyMeasureEndTime = 0;
 uint32_t lastFrequencyMeasureStartTime = 0;
-uint32_t lastZeroCrossingTime[channelsAvailable] = {};
+uint32_t lastZeroCrossingTime[channelsAvailable];
 
 template<uint8_t index>
 inline void ICACHE_RAM_ATTR zeroCrossingCallback() {
@@ -25,6 +25,11 @@ void measureSetup() {
 	logSerialMessage("\n--- Measure setup ---");
 
 	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		powerStatus[i] = false;
+		lastPowerStatus[i] = false;
+		zeroCrossingCounter[i] = 0;
+		lastFrequencyMeasured[i] = 0;
+		lastZeroCrossingTime[i] = 0;
 		pinMode(measurePin[i], INPUT_PULLUP);
 	}
 

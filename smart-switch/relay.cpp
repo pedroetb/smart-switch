@@ -1,15 +1,10 @@
 #include "relay.hpp"
 
-bool relayStatus[channelsAvailable] = {};
-
-bool getRelayStatus(const uint8_t index) {
-
-	return relayStatus[index];
-}
+bool relayStatus[channelsAvailable];
 
 void writeRelayStatus(const uint8_t index) {
 
-	digitalWrite(relayPin[index], !getRelayStatus(index)); // HIGH/LOW are inverted on NodeMCU
+	digitalWrite(relayPin[index], !relayStatus[index]); // HIGH/LOW are inverted on NodeMCU
 }
 
 void relaySetup() {
@@ -17,6 +12,7 @@ void relaySetup() {
 	logSerialMessage("\n--- Relay setup ---");
 
 	for (uint8_t i = 0; i < channelsAvailable; i++) {
+		relayStatus[i] = false;
 		pinMode(relayPin[i], OUTPUT);
 		writeRelayStatus(i);
 	}
@@ -24,9 +20,9 @@ void relaySetup() {
 	logSerialMessage("Managing relays state");
 }
 
-void setRelayStatus(const uint8_t index, const bool status) {
+bool getRelayStatus(const uint8_t index) {
 
-	relayStatus[index] = status;
+	return relayStatus[index];
 }
 
 void logApplyRelayStatus(const uint8_t index) {
@@ -37,7 +33,7 @@ void logApplyRelayStatus(const uint8_t index) {
 	strcat(msg, tmp);
 	strcat(msg, " is: ");
 
-	if (getRelayStatus(index)) {
+	if (relayStatus[index]) {
 		strcat(msg, "ON");
 	} else {
 		strcat(msg, "OFF");
@@ -54,19 +50,19 @@ void applyRelayStatus(const uint8_t index) {
 
 void enableRelay(const uint8_t index) {
 
-	setRelayStatus(index, true);
+	relayStatus[index] = true;
 	applyRelayStatus(index);
 }
 
 void disableRelay(const uint8_t index) {
 
-	setRelayStatus(index, false);
+	relayStatus[index] = false;
 	applyRelayStatus(index);
 }
 
 void toggleRelay(const uint8_t index) {
 
-	setRelayStatus(index, !getRelayStatus(index));
+	relayStatus[index] = !relayStatus[index];
 	applyRelayStatus(index);
 }
 
