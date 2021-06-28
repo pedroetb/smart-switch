@@ -11,7 +11,7 @@ uint32_t lastMqttEvalTime = 0;
 uint32_t lastMqttReconnectTime = 0;
 bool previouslyConnected = false;
 bool mqttConectionLost = true;
-bool mqttEnabled = true;
+bool mqttEnabled = mqttEnabledDefault;
 
 void setMqttTopics() {
 

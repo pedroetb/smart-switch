@@ -28,10 +28,12 @@ constexpr uint8_t resetPowerStatusTimeout = 100;
 constexpr uint16_t measureFrequencyInterval = 10000;
 
 // timer
+constexpr bool timerEnabledDefault = true;
 constexpr uint32_t timerTimeoutDefault = 600000;
 constexpr uint16_t timerWarmingTimeout = resetPowerStatusTimeout * 1.5;
 
 // noise
+constexpr bool noiseEnabledDefault = true;
 constexpr uint8_t noisePin = D2; // GPIO4
 constexpr uint16_t noiseLongDebounceTimeout = 150;
 constexpr uint16_t noiseRepetitiveDebounceTimeout = 600;
@@ -43,12 +45,14 @@ constexpr char wifiPass[64] = "<pass>"; // max. length 63
 constexpr uint16_t wifiEvalInterval = 10000;
 
 // http
+constexpr bool httpEnabledDefault = true;
 constexpr uint16_t httpServerPort = 80;
 constexpr uint8_t httpRedirectTimeout = 5;
 constexpr uint8_t httpRefreshInterval = 30;
 constexpr uint16_t httpEvalInterval = 1000;
 
 // mqtt
+constexpr bool mqttEnabledDefault = true;
 constexpr char mqttBrokerUrl[65] = "<broker>"; // max. length 64
 constexpr uint16_t mqttBrokerPort = 1883;
 constexpr char mqttUser[65] = "<user>"; // max. length 64

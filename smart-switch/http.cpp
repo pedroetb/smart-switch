@@ -15,7 +15,7 @@ constexpr char httpTimeoutValues[httpTimeoutsLength][httpTimeoutValueMaxSize] = 
 ESP8266WebServer server(httpServerPort);
 char httpTitle[38];
 uint32_t lastHttpEvalTime = 0;
-bool httpEnabled = true;
+bool httpEnabled = httpEnabledDefault;
 
 void logHttpRequestUri() {
 

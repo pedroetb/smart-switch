@@ -13,7 +13,7 @@ void noiseSetup() {
 	pinMode(noisePin, INPUT);
 
 	for (uint8_t i = 0; i < channelsAvailable; i++) {
-		noiseEnabled[i] = true;
+		noiseEnabled[i] = noiseEnabledDefault;
 	}
 
 	logSerialMessage("Listening double-clap sound patterns");

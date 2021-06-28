@@ -42,7 +42,7 @@ void timerSetup() {
 	logSerialMessage("\n--- Timer setup ---");
 
 	for (uint8_t i = 0; i < channelsAvailable; i++) {
-		timerEnabled[i] = true;
+		timerEnabled[i] = timerEnabledDefault;
 	}
 
 	if (getTimerEnabled()) {
