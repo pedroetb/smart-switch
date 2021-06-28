@@ -4,6 +4,12 @@ uint32_t lastWifiEvalTime = 0;
 bool wifiFailure = false;
 bool wifiSettingUp = true;
 
+void wifiConnect() {
+
+	WiFi.disconnect();
+	WiFi.begin(wifiSsid, wifiPass);
+}
+
 void wifiSetup() {
 
 	logSerialMessage("\n--- WiFi setup ---");
@@ -14,7 +20,7 @@ void wifiSetup() {
 	getDeviceId(wifiHostname);
 	WiFi.hostname(wifiHostname);
 
-	WiFi.begin(wifiSsid, wifiPass);
+	wifiConnect();
 
 	logSerialMessage("WiFi connection is starting");
 }
@@ -130,5 +136,6 @@ void evalWifiStatus(const uint32_t currEvalTime) {
 
 	if (!getWifiStatus()) {
 		logSerialMessage("WiFi connection failed");
+		wifiConnect();
 	};
 }
