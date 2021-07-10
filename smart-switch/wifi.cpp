@@ -116,15 +116,59 @@ void onWifiFailed() {
 	}
 }
 
+uint8_t readWifiStatus() {
+
+	return WiFi.status();
+}
+
+bool checkWifiConnected() {
+
+	return readWifiStatus() == WL_CONNECTED;
+}
+
 bool getWifiStatus() {
 
-	const bool wifiConnected = WiFi.status() == WL_CONNECTED;
+	const bool wifiConnected = checkWifiConnected();
 	if (wifiConnected) {
 		onWifiConnected();
 	} else {
 		onWifiFailed();
 	}
 	return wifiConnected;
+}
+
+void logWifiFailure() {
+
+	const uint8_t wifiStatus = readWifiStatus();
+	char msg[80] = "WiFi connection failed with error: ";
+	char err[4];
+
+	itoa(wifiStatus, err, 10);
+	strcat(msg, err);
+
+	strcat(msg, " (");
+	if (wifiStatus == WL_IDLE_STATUS) {
+		strcat(msg, "idle status, changing between statuses");
+	} else if (wifiStatus == WL_NO_SSID_AVAIL) {
+		strcat(msg, "configured SSID cannot be reached");
+	} else if (wifiStatus == WL_SCAN_COMPLETED) {
+		strcat(msg, "WiFi scan just completed");
+	} else if (wifiStatus == WL_CONNECTED) {
+		strcat(msg, "after failure, WiFi is now connected");
+	} else if (wifiStatus == WL_CONNECT_FAILED) {
+		strcat(msg, "connect failed");
+	} else if (wifiStatus == WL_CONNECTION_LOST) {
+		strcat(msg, "connection lost, maybe too far away");
+	} else if (wifiStatus == WL_DISCONNECTED) {
+		strcat(msg, "disconnected");
+	} else if (wifiStatus == WL_NO_SHIELD) {
+		strcat(msg, "WiFi hardware not found");
+	} else {
+		strcat(msg, "unknown failure");
+	}
+	strcat(msg, ")");
+
+	logSerialMessage(msg);
 }
 
 void evalWifiStatus(const uint32_t currEvalTime) {
@@ -135,7 +179,7 @@ void evalWifiStatus(const uint32_t currEvalTime) {
 	lastWifiEvalTime = currEvalTime;
 
 	if (!getWifiStatus()) {
-		logSerialMessage("WiFi connection failed");
+		logWifiFailure();
 		wifiConnect();
 	};
 }
