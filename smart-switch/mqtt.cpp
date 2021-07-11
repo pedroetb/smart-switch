@@ -3,7 +3,7 @@
 constexpr uint8_t mqttMaxPayloadSize = maxActionSize + maxParamSize; // max. length 25
 
 WiFiClient wifiClient;
-PubSubClient mqttClient;
+PubSubClient mqttClient(wifiClient);
 char mqttLogTopic[42];
 char mqttOutputTopic[45];
 char mqttInputTopic[44];
@@ -38,7 +38,6 @@ void mqttSetup() {
 
 	wifiClient.setTimeout(mqttResolveTimeout);
 
-	mqttClient.setClient(wifiClient);
 	mqttClient.setServer(mqttBrokerUrl, mqttBrokerPort);
 	mqttClient.setCallback(mqttCallback);
 	mqttClient.setBufferSize(mqttMaxPacketSize);
@@ -52,25 +51,27 @@ void mqttSetup() {
 
 bool getMqttStatus() {
 
-	return mqttClient.connected();
+	return mqttEnabled && mqttClient.connected();
 }
 
 void publishMqttMessage(const char *message, const char *topic, const bool retain = false) {
 
+	if (!getMqttStatus()) {
+		return;
+	}
+
 	const uint16_t length = strlen(message);
 
-	if (getMqttStatus()) {
-		mqttClient.beginPublish(topic, length, retain);
-		for (uint16_t i = 0; i < length; i++) {
-			mqttClient.write((uint8_t)message[i]);
-		}
-		mqttClient.endPublish();
+	mqttClient.beginPublish(topic, length, retain);
+	for (uint16_t i = 0; i < length; i++) {
+		mqttClient.write((uint8_t)message[i]);
 	}
+	mqttClient.endPublish();
 }
 
 void logMqttMessage(const char *message) {
 
-	if (!mqttLogEnabled || !mqttEnabled) {
+	if (!mqttLogEnabled) {
 		return;
 	}
 
@@ -78,10 +79,6 @@ void logMqttMessage(const char *message) {
 }
 
 void outputMqttMessage(const char *message, const bool retain = false) {
-
-	if (!mqttEnabled) {
-		return;
-	}
 
 	publishMqttMessage(message, mqttOutputTopic, retain);
 }
@@ -394,8 +391,8 @@ void enableMqtt() {
 		return;
 	}
 
+	logSerialMessage("MQTT communication enabled");
 	mqttEnabled = true;
-	logMessage("MQTT communication enabled");
 	mqttConnect();
 }
 
@@ -405,9 +402,9 @@ void disableMqtt() {
 		return;
 	}
 
-	mqttEnabled = false;
-	logMessage("MQTT communication disabled");
+	logSerialMessage("MQTT communication disabled");
 	mqttDisconnect();
+	mqttEnabled = false;
 }
 
 bool getMqttEnabled() {
