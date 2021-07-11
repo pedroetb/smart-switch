@@ -2,7 +2,8 @@
 
 Smart switch for AC, based on Arduino
 
-[:heart: Sponsor](https://github.com/sponsors/pedroetb)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/-Sponsor-fafbfc?logo=GitHub%20Sponsors)](https://github.com/sponsors/pedroetb)
 
 ## Description
 
@@ -42,6 +43,8 @@ mosquitto_pub -h "<broker>" -t "pedroetb/smart-switch/001/input" -m "/status"
 
 ## License
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 This project is released under the [MIT License](LICENSE).
 
 ## References
@@ -58,6 +61,6 @@ This project is released under the [MIT License](LICENSE).
 * [Cómo programar el ESP8266 o ESP32 por WiFi con Arduino OTA](https://www.luisllamas.es/como-programar-el-esp8266-por-wifi-con-arduino-ota/)
 * [H11aa1 y Arduino : Midiento la frecuencia de red. - YouTube](https://www.youtube.com/watch?v=7xisoSWYbOA)
 * [Control de Fase con Arduino : Diseño del Cirrcuito. - YouTube](https://www.youtube.com/watch?v=fX3HQqQkMic)
-* [The Evils of Arduino Strings | Majenko's Hardware Hacking Blog]https://hackingmajenkoblog.wordpress.com/2016/02/04/the-evils-of-arduino-strings/()
+* [The Evils of Arduino Strings | Majenko's Hardware Hacking Blog](https://hackingmajenkoblog.wordpress.com/2016/02/04/the-evils-of-arduino-strings/)
 * [Memory, memory, always memory !!! – An Esp8266 microcontroller in my Life](https://esp8266life.wordpress.com/2019/01/13/memory-memory-always-memory/)
 * [Optimizing SRAM | Memories of an Arduino | Adafruit Learning System](https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram)
