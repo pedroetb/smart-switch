@@ -71,6 +71,11 @@ void getDeviceId(char *deviceIdBuffer) {
 	strcpy(deviceIdBuffer, deviceId);
 }
 
+uint32_t getFreeMemory() {
+
+	return ESP.getFreeHeap();
+}
+
 void getDeviceStatus(char *deviceStatusBuffer) {
 
 	static char macBuffer[18];
@@ -98,7 +103,7 @@ void getDeviceStatus(char *deviceStatusBuffer) {
 	snprintf(deviceStatusBuffer, deviceStatusMaxSize, deviceStatusTemplate,
 		deviceId, powerStatusBuffer, netFrequencyBuffer, relayStatusBuffer, timerEnabledBuffer, getTimerElapsedTime(),
 		getTimerTimeout(), noiseEnabledBuffer, getNoiseValue(), getWifiStatus(), macBuffer, ssidBuffer, ipBuffer,
-		getWifiRssi(), getHttpEnabled(), getMqttEnabled(), getMqttStatus(), getOtaEnabled());
+		getWifiRssi(), getHttpEnabled(), getMqttEnabled(), getMqttStatus(), getOtaEnabled(), getFreeMemory());
 }
 
 bool validateChannel(const uint8_t channel) {

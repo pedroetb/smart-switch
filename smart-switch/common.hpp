@@ -23,8 +23,8 @@ constexpr char actions[actionsLength][maxActionSize] = {
 	"/enable-ota", "/disable-ota",
 };
 constexpr uint8_t arrayValueSize = 4 * channelsAvailable + 3;
-constexpr uint16_t deviceStatusMaxSize = 427 + (3 * channelsAvailable + 2) * 5;
-constexpr char deviceStatusTemplate[338] = "{\n"
+constexpr uint16_t deviceStatusMaxSize = 454 + (3 * channelsAvailable + 2) * 5;
+constexpr char deviceStatusTemplate[351] = "{\n"
 	"\t\"id\": \"%s\",\n"
 	"\t\"powerStatus\": %s,\n"
 	"\t\"netFrequency\": %s,\n"
@@ -42,7 +42,8 @@ constexpr char deviceStatusTemplate[338] = "{\n"
 	"\t\"httpEnabled\": %u,\n"
 	"\t\"mqttEnabled\": %u,\n"
 	"\t\"mqttStatus\": %u,\n"
-	"\t\"otaEnabled\": %u\n"
+	"\t\"otaEnabled\": %u,\n"
+	"\t\"freeMemory\": %u\n"
 	"}";
 
 void commonSetup();
