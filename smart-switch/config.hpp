@@ -11,7 +11,7 @@ constexpr bool mqttLogEnabled = true;
 constexpr char rootName[17] = "pedroetb"; // max. length 16
 constexpr char commonName[17] = "smart-switch"; // max. length 16
 constexpr char uniqueId[4] = "001"; // max. length 3
-constexpr uint8_t channelsAvailable = 2; // if changed, add new pins and one attach per channel at measure setup
+constexpr uint8_t channelsAvailable = 2; // if changed, update pins at relayPin and measurePin
 
 // relay
 constexpr uint8_t relayPin[channelsAvailable] = {

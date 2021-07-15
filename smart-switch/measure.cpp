@@ -20,6 +20,15 @@ inline void ICACHE_RAM_ATTR zeroCrossingCallback() {
 	powerStatus[index] = true;
 }
 
+template<uint8_t index>
+void listenZeroCrossing() {
+
+	attachInterrupt(digitalPinToInterrupt(measurePin[index]), zeroCrossingCallback<index>, RISING);
+	if (index > 0) {
+		listenZeroCrossing<index - 1>();
+	}
+}
+
 void measureSetup() {
 
 	logSerialMessage("\n--- Measure setup ---");
@@ -33,9 +42,7 @@ void measureSetup() {
 		pinMode(measurePin[i], INPUT_PULLUP);
 	}
 
-	// One attach by channel
-	attachInterrupt(digitalPinToInterrupt(measurePin[0]), zeroCrossingCallback<0>, RISING);
-	attachInterrupt(digitalPinToInterrupt(measurePin[1]), zeroCrossingCallback<1>, RISING);
+	listenZeroCrossing<channelsAvailable - 1>();
 
 	logSerialMessage("Listening signal zero-crossing events");
 }

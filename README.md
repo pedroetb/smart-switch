@@ -64,3 +64,4 @@ This project is released under the [MIT License](LICENSE).
 * [The Evils of Arduino Strings | Majenko's Hardware Hacking Blog](https://hackingmajenkoblog.wordpress.com/2016/02/04/the-evils-of-arduino-strings/)
 * [Memory, memory, always memory !!! – An Esp8266 microcontroller in my Life](https://esp8266life.wordpress.com/2019/01/13/memory-memory-always-memory/)
 * [Optimizing SRAM | Memories of an Arduino | Adafruit Learning System](https://learn.adafruit.com/memories-of-an-arduino/optimizing-sram)
+* [Template Metaprogramming: Compile time loops over class methods | by Niko Savas | Medium](https://medium.com/@savas/template-metaprogramming-compile-time-loops-over-class-methods-a243dc346122)
